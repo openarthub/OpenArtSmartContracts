@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity ^0.8.4;
 
-interface StorageOA {
+interface IStorageOA {
     // Structur of items stored
     struct StorageItem {
         uint256 itemId;
@@ -36,8 +36,9 @@ interface StorageOA {
     function approvalForTransfer(address addressContract, bool approved) external;
 
     /* Allows other contract to send this contract's nft */
-    function transferNFT(address nftContract, address to, uint256 nftId) external;
+    function transferItem(uint256 itemId, address to) external;
 
-    function setItem(uint256 itemId, address payable owner_item, bool onAuction, bool onSale, bool isActive, address stored) external;
+    function setItem(uint256 itemId, address payable owner_item, uint256 price, bool onAuction, bool onSale, address currency, bool isActive, address stored) external;
     function createItem(address nftContract, uint256 tokenId, bool isActive, address owner_item) external;
+    function setActiveItem(uint256 itemId, bool isActive) external;
 }

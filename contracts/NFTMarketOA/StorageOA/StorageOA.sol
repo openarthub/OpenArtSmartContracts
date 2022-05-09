@@ -174,15 +174,22 @@ contract StorageOA {
     }
 
     /* Allows other contract to send this contract's nft */
-    function transferNFT(address nftContract, address to, uint256 nftId) onlyApprovals public {
-        IERC721(nftContract).transferFrom(address(this), to, nftId);
+    function transferItem(uint256 itemId, address to) onlyApprovals public {
+        address nftContract = storedItems[itemId].nftContract;
+        uint256 nftId = storedItems[itemId].tokenId;
+        IERC721(nftContract).safeTransferFrom(address(this), to, nftId);
+        storedItems[itemId].owner = payable(to);
+        storedItems[itemId].onAuction = false;
+        storedItems[itemId].onSale = false;
+        storedItems[itemId].stored = address(0);
     }
 
-    function setItem(uint256 itemId, address payable owner_item, uint256 price, bool onAuction, bool onSale, bool isActive, address stored) onlyApprovals public {
+    function setItem(uint256 itemId, address payable owner_item, uint256 price, bool onAuction, bool onSale, address currency, bool isActive, address stored) onlyApprovals public {
         storedItems[itemId].owner = owner_item;
         storedItems[itemId].price = price;
         storedItems[itemId].onAuction = onAuction;
         storedItems[itemId].onSale = onSale;
+        storedItems[itemId].currency = currency;
         storedItems[itemId].isActive = isActive;
         storedItems[itemId].stored = stored;
     }
@@ -199,6 +206,11 @@ contract StorageOA {
         emit ItemCreated(
             itemId, nftContract, tokenId, owner_item, false, false
         );
+    }
+
+    function setActiveItem(uint256 itemId, bool isActive) public {
+        require(msg.sender == owner || msg.sender == storedItems[itemId].owner, "You are not allowed to modify this element");
+        storedItems[itemId].isActive = isActive;
     }
 
 }
