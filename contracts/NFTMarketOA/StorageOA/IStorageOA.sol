@@ -13,7 +13,7 @@ interface IStorageOA {
         bool onSale;
         uint256 endTime;
         address highestBidder;
-        uint highestBid;
+        uint256 highestBid;
         address currency;
         bool isActive;
         address stored;
@@ -38,7 +38,8 @@ interface IStorageOA {
     /* Allows other contract to send this contract's nft */
     function transferItem(uint256 itemId, address to) external;
 
-    function setItem(uint256 itemId, address payable owner_item, uint256 price, bool onAuction, bool onSale, address currency, bool isActive, address stored) external;
+    function setItem(uint256 itemId, address payable owner_item, uint256 price, bool onAuction, bool onSale, uint256 endTime, address highestBidder, uint256 highestBid, address currency, bool isActive, address stored) external;
+    function setItemAuction(uint256 itemId, address highestBidder, uint256 highestBid) external;
     function createItem(address nftContract, uint256 tokenId, bool isActive, address owner_item) external;
     function setActiveItem(uint256 itemId, bool isActive) external;
 }

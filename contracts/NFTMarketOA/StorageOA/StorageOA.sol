@@ -182,16 +182,26 @@ contract StorageOA {
         storedItems[itemId].onAuction = false;
         storedItems[itemId].onSale = false;
         storedItems[itemId].stored = address(0);
+        storedItems[itemId].highestBidder = address(0);
+        storedItems[itemId].highestBid = 0;
     }
 
-    function setItem(uint256 itemId, address payable owner_item, uint256 price, bool onAuction, bool onSale, address currency, bool isActive, address stored) onlyApprovals public {
+    function setItem(uint256 itemId, address payable owner_item, uint256 price, bool onAuction, bool onSale, uint256 endTime, address highestBidder, uint256 highestBid, address currency, bool isActive, address stored) onlyApprovals public {
         storedItems[itemId].owner = owner_item;
         storedItems[itemId].price = price;
         storedItems[itemId].onAuction = onAuction;
         storedItems[itemId].onSale = onSale;
+        storedItems[itemId].endTime = endTime;
+        storedItems[itemId].highestBidder = highestBidder;
+        storedItems[itemId].highestBid = highestBid;
         storedItems[itemId].currency = currency;
         storedItems[itemId].isActive = isActive;
         storedItems[itemId].stored = stored;
+    }
+
+    function setItemAuction(uint256 itemId, address highestBidder, uint256 highestBid) onlyApprovals public {
+        storedItems[itemId].highestBidder = highestBidder;
+        storedItems[itemId].highestBid = highestBid;
     }
 
     function createItem(address nftContract, uint256 tokenId, bool isActive, address owner_item) onlyApprovals public {
