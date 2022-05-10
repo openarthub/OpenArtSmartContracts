@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -84,7 +83,7 @@ contract SalesOA is ReentrancyGuard {
         require(!item.onSale, "This item is on sale already");
         require(!item.onAuction, "This item is currently on auction");        
         IERC721(item.nftContract).transferFrom(item.owner, address_storage, item.tokenId);
-        iStorage.setItem(itemId, payable(seller), price, false, true, currency, true, address_storage);
+        iStorage.setItem(itemId, payable(seller), price, false, true, 0, address(0), 0, currency, true, address_storage);
     }
 
     /* Remove from sale */
