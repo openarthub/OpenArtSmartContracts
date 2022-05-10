@@ -84,4 +84,9 @@ contract AuctionsOA is ApprovalsGuard {
         require(winner == item.highestBidder, "Only the winner can claim the nft.");
         iStorage.transferItem(itemId, winner);
     }
+
+    /* Set storage address */
+    function setStorageAddress (address _address_storage) onlyOwner public {
+        address_storage = _address_storage;
+    }
 }
