@@ -4,36 +4,21 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../StorageOA/IStorageOA.sol";
+import "../../utils/ApprovalsGuard.sol";
 
 
 
-contract AuctionsOA {
+contract AuctionsOA is ApprovalsGuard {
 
-    // Mapping of approved address to send contract's nfts
-    mapping(address => bool) private _approvals;
-
-    address payable owner;
     address address_storage;
     uint256 listingPrice;
 
-    /* Modifier to allow only owner to execute a function */
-    modifier onlyOwner {
-        require(msg.sender == owner, "You are not allowed to execute this function");
-        _;
-    }
-
-    /* Modifier to allow only address stored in _approvals */
-    modifier onlyApprovals {
-        require(_approvals[msg.sender], "You are not allowed to execute this method");
-        _;
-    }
-
-    constructor(uint256 _listingPrice, address _address_storage) payable {
-        owner = payable(msg.sender);
+    constructor(uint256 _listingPrice, address _address_storage) {
         listingPrice = _listingPrice;
         address_storage = _address_storage;
     }
 
+    /* Activate Auction */
     function activateAuction(uint256 itemId, uint256 endTime, uint256 minBid, address currency, address seller) onlyApprovals public {
         IStorageOA iStorage = IStorageOA(address_storage);
         IStorageOA.StorageItem memory item = iStorage.getItem(itemId);

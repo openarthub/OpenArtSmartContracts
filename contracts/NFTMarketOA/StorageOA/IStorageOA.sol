@@ -33,8 +33,6 @@ interface IStorageOA {
 
     function getItem (uint256 itemId) external view returns (StorageItem memory);
 
-    function approvalForTransfer(address addressContract, bool approved) external;
-
     /* Allows other contract to send this contract's nft */
     function transferItem(uint256 itemId, address to) external;
 

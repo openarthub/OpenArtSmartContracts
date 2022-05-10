@@ -4,20 +4,12 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "../NFTMarketOA/INFTMarketOA.sol";
+import "../../utils/ApprovalsGuard.sol";
 
-contract StorageOA {
-    // Mapping of approved address to write storage
-    mapping(address => bool) private _approvals;
-
-    // Modifier to allow only approvals to execute methods
-    modifier onlyApprovals {
-        require(_approvals[msg.sender], "You are not allowed to execute this method");
-        _;
-    }
+contract StorageOA is ApprovalsGuard {
 
     using Counters for Counters.Counter;
     Counters.Counter private _itemIds;
-    address payable owner;
 
     // Structur of items stored
     struct StorageItem {
@@ -39,7 +31,6 @@ contract StorageOA {
     mapping(uint256 => StorageItem) private storedItems;
 
     constructor(address address_backup) {
-        owner = payable(msg.sender);
         INFTMarketOA.MarketItem[] memory oldData = INFTMarketOA(address_backup).fetchMarketItems();
 
         for (uint256 item = 0; item < oldData.length; item++) {
@@ -166,11 +157,6 @@ contract StorageOA {
 
     function getItem (uint256 itemId) public view returns (StorageItem memory) {
         return storedItems[itemId];
-    }
-
-    function approvalForTransfer(address addressContract, bool approved) public {
-        require(msg.sender == owner, "You are not allowed to execute this function");
-        _approvals[addressContract] = approved;
     }
 
     /* Allows other contract to send this contract's nft */
