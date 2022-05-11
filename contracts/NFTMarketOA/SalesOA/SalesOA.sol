@@ -17,12 +17,6 @@ contract SalesOA is ReentrancyGuard, ApprovalsGuard  {
         address_storage = _address_storage;
     }
 
-    /* Return allowance in a specific ERC20 token */
-    function myallowance(address currency) view public returns (uint){
-        IERC20 erc20 = IERC20(currency);
-        return erc20.allowance(msg.sender,address(this));
-    }
-
     /* Returns the listing price of the contract */
     function getListingPrice() public view returns (uint256) {
         return listingPrice;
