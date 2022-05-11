@@ -18,6 +18,24 @@ contract AuctionsOA is ApprovalsGuard {
         address_storage = _address_storage;
     }
 
+    event MakeOffer (
+        uint256 indexed itemId,
+        address indexed nftContract,
+        uint256 indexed tokenId,
+        address owner,
+        address bidder,
+        uint256 amount,
+        uint256 endTime
+    );
+
+    event ListItem(
+        uint256 indexed itemId,
+        address indexed nftContract,
+        uint256 indexed tokenId,
+        address owner,
+        uint256 price
+    );
+
     /* Activate Auction */
     function activateAuction(uint256 itemId, uint256 endTime, uint256 minBid, address currency, address seller) onlyApprovals public {
         IStorageOA iStorage = IStorageOA(address_storage);
@@ -28,6 +46,7 @@ contract AuctionsOA is ApprovalsGuard {
         require(!item.onAuction, "This item is already on auction");        
         IERC721(item.nftContract).transferFrom(item.owner, address_storage, item.tokenId);
         iStorage.setItem(itemId, payable(seller), minBid, true, false, endTime, seller, 0, currency, true, address_storage);
+        emit ListItem(itemId, item.nftContract, item.tokenId, seller, minBid);
     }
 
     /* Allow users to bid */
@@ -51,6 +70,8 @@ contract AuctionsOA is ApprovalsGuard {
 
         // Set new bid for current item
         iStorage.setItemAuction(itemId, bidder, bidAmount);
+
+        emit MakeOffer(itemId, item.nftContract, item.tokenId, item.owner, bidder, bidAmount, item.endTime);
     }
 
     /* Ends auction when time is done and sends the funds to the beneficiary */
