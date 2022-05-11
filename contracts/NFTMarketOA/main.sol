@@ -67,10 +67,10 @@ contract OpenArtMarketPlace is ReentrancyGuard {
 
     /* Returns onlyl items that a user has purchased */
     function fetchMyNFTs() public view returns (IStorageOA.StorageItem[] memory) {
-        return IStorageOA(address_storage).getItemsByCollection(msg.sender);
+        return IStorageOA(address_storage).getItemsByOwner(msg.sender);
     }
 
-       /* Returns only disabled items that user owns */
+    /* Returns only disabled items that user owns */
     function fetchMyDisabledNFTs() public view returns (IStorageOA.StorageItem[] memory) {
         return IStorageOA(address_storage).getDisabledItemsByOwner(msg.sender);
     }
@@ -109,5 +109,4 @@ contract OpenArtMarketPlace is ReentrancyGuard {
     function collectNFT(uint256 itemId) public {
         IAuctionsOA(address_auctions).collectNFT(itemId, msg.sender);
     }
-
 }
