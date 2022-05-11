@@ -17,6 +17,22 @@ contract SalesOA is ReentrancyGuard, ApprovalsGuard  {
         address_storage = _address_storage;
     }
 
+    event ListItem(
+        uint256 indexed itemId,
+        address indexed nftContract,
+        uint256 indexed tokenId,
+        address owner,
+        uint256 price
+    );
+
+    event SaleItem(
+        uint256 indexed itemId,
+        address indexed nftContract,
+        uint256 indexed tokenId,
+        address owner,
+        uint256 price
+    );
+
     /* Returns the listing price of the contract */
     function getListingPrice() public view returns (uint256) {
         return listingPrice;
@@ -45,6 +61,7 @@ contract SalesOA is ReentrancyGuard, ApprovalsGuard  {
         }
 
         iStorage.transferItem(itemId, buyer);
+        emit SaleItem(itemId, item.nftContract, item.tokenId, buyer, item.price);
     }
 
     /* Change listing price in hundredths*/
@@ -61,6 +78,7 @@ contract SalesOA is ReentrancyGuard, ApprovalsGuard  {
         require(!item.onAuction, "This item is currently on auction");        
         IERC721(item.nftContract).transferFrom(item.owner, address_storage, item.tokenId);
         iStorage.setItem(itemId, payable(seller), price, false, true, 0, address(0), 0, currency, true, address_storage);
+        emit ListItem(itemId, item.nftContract, item.tokenId, item.owner, price);
     }
 
     /* Remove from sale */
