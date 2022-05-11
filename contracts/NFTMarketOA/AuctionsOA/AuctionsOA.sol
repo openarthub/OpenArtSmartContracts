@@ -27,7 +27,7 @@ contract AuctionsOA is ApprovalsGuard {
         require(!item.onSale, "This item is currently on sale");
         require(!item.onAuction, "This item is already on auction");        
         IERC721(item.nftContract).transferFrom(item.owner, address_storage, item.tokenId);
-        iStorage.setItem(itemId, payable(seller), minBid, true, false, endTime, address(0), 0, currency, true, address_storage);
+        iStorage.setItem(itemId, payable(seller), minBid, true, false, endTime, seller, 0, currency, true, address_storage);
     }
 
     /* Allow users to bid */
@@ -65,6 +65,8 @@ contract AuctionsOA is ApprovalsGuard {
         if(!item.onAuction){
             revert("The function auctionEnd has already been called");
         }
+
+        require(item.highestBid > 0, "Item didn't had bids");
 
         IERC20 erc20 = IERC20(item.currency);
 
