@@ -52,9 +52,7 @@ contract StorageOA is ApprovalsGuard {
         uint256 indexed itemId,
         address indexed nftContract,
         uint256 indexed tokenId,
-        address owner,
-        bool onAuction,
-        bool onSale
+        address owner
     );
 
     // Method to get all actives items
@@ -200,7 +198,7 @@ contract StorageOA is ApprovalsGuard {
         );
 
         emit ItemCreated(
-            itemId, nftContract, tokenId, owner_item, false, false
+            itemId, nftContract, tokenId, owner_item
         );
     }
 
