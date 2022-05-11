@@ -6,7 +6,7 @@ interface ISalesOA {
     function myallowance(address currency) external returns (uint);
 
     /* Returns the listing price of the contract */
-    function getListingPrice() external returns (uint256);
+    function getListingPrice() external view returns (uint256);
 
     /* Transfers ownership of the item, as well as funds between parties */
     function createMarketSale(uint256 itemId, address buyer) external payable;

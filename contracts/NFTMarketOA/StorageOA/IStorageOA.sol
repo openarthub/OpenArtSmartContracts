@@ -20,7 +20,7 @@ interface IStorageOA {
     }
 
     // Method to get all actives items
-    function getItems() external returns (StorageItem[] memory);
+    function getItems() external view returns (StorageItem[] memory);
 
     // Method to get actives items by collection
     function getItemsByCollection(address collectionAddress) external view returns (StorageItem[] memory);
