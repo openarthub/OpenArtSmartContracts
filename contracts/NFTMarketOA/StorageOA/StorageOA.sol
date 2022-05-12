@@ -129,7 +129,7 @@ contract StorageOA is ApprovalsGuard {
     }
 
     // Method to get disabled items by owner
-    function getDisabledItemsByOwner (address address_owner) onlyApprovals public view returns (StorageItem[] memory) {
+    function getDisabledItemsByOwner (address address_owner) public view onlyApprovals returns (StorageItem[] memory) {
 
         uint256 totalItemCount = _itemIds.current();
         uint256 itemCount = 0;
@@ -158,7 +158,7 @@ contract StorageOA is ApprovalsGuard {
     }
 
     /* Allows other contract to send this contract's nft */
-    function transferItem(uint256 itemId, address to) onlyApprovals public {
+    function transferItem(uint256 itemId, address to) public onlyApprovals {
         address nftContract = storedItems[itemId].nftContract;
         uint256 nftId = storedItems[itemId].tokenId;
         IERC721(nftContract).safeTransferFrom(address(this), to, nftId);
@@ -170,7 +170,7 @@ contract StorageOA is ApprovalsGuard {
         storedItems[itemId].highestBid = 0;
     }
 
-    function setItem(uint256 itemId, address payable owner_item, uint256 price, bool onAuction, bool onSale, uint256 endTime, address highestBidder, uint256 highestBid, address currency, bool isActive, address stored) onlyApprovals public {
+    function setItem(uint256 itemId, address payable owner_item, uint256 price, bool onAuction, bool onSale, uint256 endTime, address highestBidder, uint256 highestBid, address currency, bool isActive, address stored) public onlyApprovals {
         storedItems[itemId].owner = owner_item;
         storedItems[itemId].price = price;
         storedItems[itemId].onAuction = onAuction;
@@ -183,12 +183,12 @@ contract StorageOA is ApprovalsGuard {
         storedItems[itemId].stored = stored;
     }
 
-    function setItemAuction(uint256 itemId, address highestBidder, uint256 highestBid) onlyApprovals public {
+    function setItemAuction(uint256 itemId, address highestBidder, uint256 highestBid) public onlyApprovals {
         storedItems[itemId].highestBidder = highestBidder;
         storedItems[itemId].highestBid = highestBid;
     }
 
-    function createItem(address nftContract, uint256 tokenId, bool isActive, address owner_item) onlyApprovals public {
+    function createItem(address nftContract, uint256 tokenId, bool isActive, address owner_item) public onlyApprovals {
         require(IERC721(nftContract).ownerOf(tokenId) == owner_item, "You are not owner of this nft.");
 
         _itemIds.increment();

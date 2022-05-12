@@ -39,7 +39,7 @@ contract SalesOA is ReentrancyGuard, ApprovalsGuard  {
     }
 
     /* Transfers ownership of the item, as well as funds between parties */
-    function createMarketSale(uint256 itemId, address buyer) onlyApprovals public payable nonReentrant {
+    function createMarketSale(uint256 itemId, address buyer) public payable onlyApprovals nonReentrant {
         IStorageOA iStorage = IStorageOA(address_storage);
         IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
         require(item.onSale, "This Item is not on sale.");
@@ -65,12 +65,12 @@ contract SalesOA is ReentrancyGuard, ApprovalsGuard  {
     }
 
     /* Change listing price in hundredths*/
-    function setListingPrice (uint percent) onlyOwner public {
+    function setListingPrice (uint percent) public onlyOwner {
         listingPrice = percent;
     }
 
     /* Put on sale */
-    function activateSale(uint256 itemId, uint256 price, address currency, address seller) onlyApprovals public {
+    function activateSale(uint256 itemId, uint256 price, address currency, address seller) public onlyApprovals {
         IStorageOA iStorage = IStorageOA(address_storage);
         IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
         require(seller == item.owner, "You are not owner of this nft");
@@ -82,7 +82,7 @@ contract SalesOA is ReentrancyGuard, ApprovalsGuard  {
     }
 
     /* Remove from sale */
-    function deactivateSale(uint256 itemId, address seller) onlyApprovals public {
+    function deactivateSale(uint256 itemId, address seller) public onlyApprovals {
         IStorageOA iStorage = IStorageOA(address_storage);
         IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
         require(seller == item.owner, "You are not owner of this nft");
@@ -90,7 +90,7 @@ contract SalesOA is ReentrancyGuard, ApprovalsGuard  {
     }
 
     /* Set storage address */
-    function setStorageAddress (address _address_storage) onlyOwner public {
+    function setStorageAddress (address _address_storage) public onlyOwner {
         address_storage = _address_storage;
     }
 }
