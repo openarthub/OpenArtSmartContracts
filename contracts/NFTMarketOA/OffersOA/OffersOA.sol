@@ -68,6 +68,7 @@ contract OffersOA is ApprovalsGuard {
         IStorageOA.StorageItem memory item = iStorage.getItem(offers[offerId].itemId);
 
         require(item.owner == approval, "You are not the owner of this item");
+        require(!item.onAuction, "You can not accept offer because the item is currently on auction");
         require(block.timestamp < offers[offerId].endTime, "The offer has already expired");
         require(!offers[offerId].accepted, "The offer has already been accepted");
 

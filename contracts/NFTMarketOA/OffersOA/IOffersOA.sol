@@ -18,7 +18,7 @@ interface IOffersOA {
     function AcceptOffer(uint256 offerId, address approval) external;
 
     /* Allows user to claim items */
-    function claimItem(uint256 itemId, address claimer) external;
+    function claimItem(uint256 offerId, address claimer) external;
 
     /* Returns item's offers */
     function getOffersByItem (uint256 itemId) external view returns (Offer[] memory);
