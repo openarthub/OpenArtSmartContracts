@@ -8,7 +8,7 @@ interface IAuctionsOA {
     function bid(uint256 itemId, uint256 bidAmount, address bidder) external;
 
     /* Ends auction when time is done and sends the funds to the beneficiary */
-    function auctionEnd(uint256 itemId) external;
+    function auctionEnd(uint256 itemId, address collector) external;
 
     /* Allows user to transfer the earned NFT */
     function collectNFT(uint256 itemId, address winner) external;

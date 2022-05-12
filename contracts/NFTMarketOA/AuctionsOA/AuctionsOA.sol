@@ -13,6 +13,16 @@ contract AuctionsOA is ApprovalsGuard {
     address address_storage;
     uint256 listingPrice;
 
+    /* Struct to save if user has money to collect */
+    struct Collect {
+        bool collected;
+        uint256 amount;
+        address currency;
+        uint256 endTime;
+    }
+
+    mapping (uint256 =>  mapping(address => Collect)) private collects;
+
     constructor(uint256 _listingPrice, address _address_storage) {
         listingPrice = _listingPrice;
         address_storage = _address_storage;
@@ -46,6 +56,7 @@ contract AuctionsOA is ApprovalsGuard {
         require(!item.onAuction, "This item is already on auction");        
         IERC721(item.nftContract).transferFrom(item.owner, address_storage, item.tokenId);
         iStorage.setItem(itemId, payable(seller), minBid, true, false, endTime, seller, 0, currency, true, address_storage);
+        collects[itemId][seller] = Collect(false, 0, currency, endTime);
         emit ListItem(itemId, item.nftContract, item.tokenId, seller, minBid);
     }
 
@@ -54,14 +65,12 @@ contract AuctionsOA is ApprovalsGuard {
         IStorageOA iStorage = IStorageOA(address_storage);
         IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
 
-        require(item.onAuction, "This item is not currently on auction.");
         require(block.timestamp < item.endTime, "The auction has already ended");
         require(item.owner != bidder, "You are the owner of this nft");
-
         require((bidAmount > item.highestBid) || (bidAmount >= item.price && item.highestBid == 0), "There is already a higher or equal bid");
 
         IERC20 erc20 = IERC20(item.currency);
-        require(erc20.transferFrom(bidder, address(this), bidAmount), "Transaction failed at get bid"); // Hold OARTs
+        require(erc20.transferFrom(bidder, address(this), bidAmount), "Transaction failed at get bid");
 
         // Withdraw outbided auction
         if(item.highestBidder != address(0)) {
@@ -69,35 +78,32 @@ contract AuctionsOA is ApprovalsGuard {
         }
 
         // Set new bid for current item
+
+
         iStorage.setItemAuction(itemId, bidder, bidAmount);
+
+        collects[itemId][item.owner].amount = bidAmount;
 
         emit MakeOffer(itemId, item.nftContract, item.tokenId, item.owner, bidder, bidAmount, item.endTime);
     }
 
     /* Ends auction when time is done and sends the funds to the beneficiary */
-    function auctionEnd(uint256 itemId) onlyApprovals public {
-        IStorageOA iStorage = IStorageOA(address_storage);
-        IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
+    function auctionEnd(uint256 itemId, address collector) onlyApprovals public {
 
-        if(block.timestamp < item.endTime) {
-            revert("The auction has not ended yet");
-        }
+        require(block.timestamp > collects[itemId][collector].endTime, "The auction has not ended yet");
+        require(!collects[itemId][collector].collected, "The function auctionEnd has already been called");
+        require(collects[itemId][collector].amount > 0, "Item didn't had bids");
 
-        if(!item.onAuction){
-            revert("The function auctionEnd has already been called");
-        }
+        IERC20 erc20 = IERC20(collects[itemId][collector].currency);
 
-        require(item.highestBid > 0, "Item didn't had bids");
-
-        IERC20 erc20 = IERC20(item.currency);
-
-        item.onAuction = false;
-        if (item.owner == owner) {
-            require(erc20.transfer(owner, item.highestBid), "Transfer failed");
+        if (collector == owner) {
+            require(erc20.transfer(owner, collects[itemId][collector].amount), "Transfer failed");
         } else {
-            require(erc20.transfer(item.owner, (item.highestBid - (item.highestBid * listingPrice / 100))), "Transfer to owner failed");
-            require(erc20.transfer(owner, (item.highestBid * listingPrice / 100)), "Transfer failed");
+            require(erc20.transfer(collector, (collects[itemId][collector].amount - (collects[itemId][collector].amount * listingPrice / 100))), "Transfer to owner failed");
+            require(erc20.transfer(owner, (collects[itemId][collector].amount * listingPrice / 100)), "Transfer failed");
         }
+
+        collects[itemId][collector].collected = true;
     }
 
     /* Allows user to transfer the earned NFT */
