@@ -5,17 +5,21 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./AuctionsOA/IAuctionsOA.sol";
 import "./SalesOA/ISalesOA.sol";
 import "./StorageOA/IStorageOA.sol";
+import "./OffersOA/IOffersOA.sol";
+
 
 contract OpenArtMarketPlace is ReentrancyGuard {
     address private address_storage;
     address private address_sales;
     address private address_auctions;
+    address private address_offers;
     address private owner;
 
-    constructor (address _address_storage, address _address_sales, address _address_auctions){
+    constructor (address _address_storage, address _address_sales, address _address_auctions, address _address_offers){
         address_storage = _address_storage;
         address_sales = _address_sales;
         address_auctions =_address_auctions;
+        address_offers = _address_offers;
         owner = msg.sender;
     }
 
@@ -33,6 +37,11 @@ contract OpenArtMarketPlace is ReentrancyGuard {
     /* Change sales contract address */
     function setSalesAddress(address _address_sales) onlyOwner public {
         address_sales = _address_sales;
+    }
+
+    /* Change offers contract address */
+    function setOffersAddress(address _address_offers) onlyOwner public {
+        address_offers = _address_offers;
     }
 
     /* Change auctions contract address */
@@ -102,11 +111,36 @@ contract OpenArtMarketPlace is ReentrancyGuard {
 
     /* Ends auction when time is done and sends the funds to the beneficiary */
     function auctionEnd(uint256 itemId) public {
-        IAuctionsOA(address_auctions).auctionEnd(itemId);
+        IAuctionsOA(address_auctions).getProfits(itemId, msg.sender);
     }
 
     /* Allows user to transfer the earned NFT */
     function collectNFT(uint256 itemId) public {
         IAuctionsOA(address_auctions).collectNFT(itemId, msg.sender);
+    }
+
+    /* Allow users to make an offer */
+    function makeOffer(uint256 itemId, uint256 bidAmount, uint256 endTime, address currency) public {
+        IOffersOA(address_offers).makeOffer(itemId, bidAmount, msg.sender, endTime, currency);
+    }
+
+    /* Allow item's owner to accept offer and recive his profit */
+    function AcceptOffer(uint256 offerId) public {
+        IOffersOA(address_offers).AcceptOffer(offerId, msg.sender);
+    }
+
+    /* Allows user to claim items */
+    function claimItem(uint256 offerId) public {
+        IOffersOA(address_offers).claimItem(offerId, msg.sender);
+    }
+
+    /* Returns item's offers */
+    function getOffersByItem (uint256 itemId) public view returns (IOffersOA.Offer[] memory) {
+        return IOffersOA(address_offers).getOffersByItem(itemId);
+    }
+
+    /* Return item's offers currently active */
+    function getActiveOffersByItem (uint256 itemId) public view returns (IOffersOA.Offer[] memory) {
+        return IOffersOA(address_offers).getActiveOffersByItem(itemId);
     }
 }

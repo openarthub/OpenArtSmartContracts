@@ -88,7 +88,7 @@ contract AuctionsOA is ApprovalsGuard {
     }
 
     /* Ends auction when time is done and sends the funds to the beneficiary */
-    function auctionEnd(uint256 itemId, address collector) onlyApprovals public {
+    function getProfits(uint256 itemId, address collector) onlyApprovals public {
 
         require(block.timestamp > collects[itemId][collector].endTime, "The auction has not ended yet");
         require(!collects[itemId][collector].collected, "The function auctionEnd has already been called");
