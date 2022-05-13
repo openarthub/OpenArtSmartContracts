@@ -131,3 +131,6 @@ dmypy.json
 # Remix
 .deps/
 artifacts/
+
+node_modules
+cache
