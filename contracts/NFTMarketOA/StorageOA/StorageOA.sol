@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "../NFTMarketOA/INFTMarketOA.sol";
 import "../../utils/ApprovalsGuard.sol";
+import "hardhat/console.sol";
 
 contract StorageOA is ApprovalsGuard {
 
@@ -30,10 +31,13 @@ contract StorageOA is ApprovalsGuard {
 
     mapping(uint256 => StorageItem) private storedItems;
 
-    constructor(address address_backup) {
-        INFTMarketOA.MarketItem[] memory oldData = INFTMarketOA(address_backup).fetchMarketItems();
+    constructor(address addressBackup) {
 
-        for (uint256 item = 0; item < oldData.length; item++) {
+        console.log("Address Backup %s", addressBackup);
+        if (addressBackup == address(0)) return;
+        try INFTMarketOA(addressBackup).fetchMarketItems() returns (INFTMarketOA.MarketItem[] memory oldData) {
+
+          for (uint256 item = 0; item < oldData.length; item++) {
             _itemIds.increment();
             uint256 itemId = _itemIds.current();
             storedItems[itemId] = StorageItem(
@@ -45,6 +49,10 @@ contract StorageOA is ApprovalsGuard {
                 oldData[item].isActive,
                 address(0)
             );
+          }
+        }
+        catch {
+          return;
         }
     }
 
@@ -85,7 +93,7 @@ contract StorageOA is ApprovalsGuard {
         uint256 itemCount = 0;
         uint256 currentIndex = 0;
 
-       for (uint256 i = 0; i < totalItemCount; i++) {
+      for (uint256 i = 0; i < totalItemCount; i++) {
             if (storedItems[i + 1].nftContract == collectionAddress && storedItems[i + 1].isActive) {
                 itemCount += 1;
             }

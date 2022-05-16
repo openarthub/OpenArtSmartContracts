@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 abstract contract ApprovalsGuard {
-        // Mapping of approved address to write storage
+    // Mapping of approved address to write storage
     mapping(address => bool) private _approvals;
     address internal owner;
 
