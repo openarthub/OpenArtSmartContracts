@@ -47,7 +47,7 @@ contract AuctionsOA is ApprovalsGuard {
     );
 
     /* Activate Auction */
-    function activateAuction(uint256 itemId, uint256 endTime, uint256 minBid, address currency, address seller) onlyApprovals public {
+    function activateAuction(uint256 itemId, uint256 endTime, uint256 minBid, address currency, address seller) public onlyApprovals {
         IStorageOA iStorage = IStorageOA(address_storage);
         IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
 
@@ -61,7 +61,7 @@ contract AuctionsOA is ApprovalsGuard {
     }
 
     /* Allow users to bid */
-    function bid(uint256 itemId, uint256 bidAmount, address bidder) onlyApprovals public {
+    function bid(uint256 itemId, uint256 bidAmount, address bidder) public onlyApprovals {
         IStorageOA iStorage = IStorageOA(address_storage);
         IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
 
@@ -88,7 +88,7 @@ contract AuctionsOA is ApprovalsGuard {
     }
 
     /* Ends auction when time is done and sends the funds to the beneficiary */
-    function getProfits(uint256 itemId, address collector) onlyApprovals public {
+    function getProfits(uint256 itemId, address collector) public onlyApprovals {
 
         require(block.timestamp > collects[itemId][collector].endTime, "The auction has not ended yet");
         require(!collects[itemId][collector].collected, "The function auctionEnd has already been called");
@@ -107,7 +107,7 @@ contract AuctionsOA is ApprovalsGuard {
     }
 
     /* Allows user to transfer the earned NFT */
-    function collectNFT(uint256 itemId, address winner) onlyApprovals public {
+    function collectNFT(uint256 itemId, address winner) public onlyApprovals {
         IStorageOA iStorage = IStorageOA(address_storage);
         IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
         require(winner == item.highestBidder, "Only the winner can claim the nft.");
@@ -115,7 +115,7 @@ contract AuctionsOA is ApprovalsGuard {
     }
 
     /* Set storage address */
-    function setStorageAddress (address _address_storage) onlyOwner public {
+    function setStorageAddress (address _address_storage) public onlyOwner {
         address_storage = _address_storage;
     }
 }

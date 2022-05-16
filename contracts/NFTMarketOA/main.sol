@@ -30,22 +30,22 @@ contract OpenArtMarketPlace is ReentrancyGuard {
     }
 
     /* Change storage contract address */
-    function setStorageAddress(address _address_storage) onlyOwner public {
+    function setStorageAddress(address _address_storage) public onlyOwner {
         address_storage = _address_storage;
     }
 
     /* Change sales contract address */
-    function setSalesAddress(address _address_sales) onlyOwner public {
+    function setSalesAddress(address _address_sales) public onlyOwner {
         address_sales = _address_sales;
     }
 
     /* Change offers contract address */
-    function setOffersAddress(address _address_offers) onlyOwner public {
+    function setOffersAddress(address _address_offers) public onlyOwner {
         address_offers = _address_offers;
     }
 
     /* Change auctions contract address */
-    function setAuctionsAddress(address _address_auctions) onlyOwner public {
+    function setAuctionsAddress(address _address_auctions) public onlyOwner {
         address_auctions = _address_auctions;
     }
 

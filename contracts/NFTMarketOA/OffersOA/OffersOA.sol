@@ -46,7 +46,7 @@ contract OffersOA is ApprovalsGuard {
 
 
     /* Allow users to make an offer */
-    function makeOffer(uint256 itemId, uint256 bidAmount, address bidder, uint256 endTime, address currency) onlyApprovals public {
+    function makeOffer(uint256 itemId, uint256 bidAmount, address bidder, uint256 endTime, address currency) public onlyApprovals {
         IStorageOA iStorage = IStorageOA(address_storage);
         IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
 
@@ -63,7 +63,7 @@ contract OffersOA is ApprovalsGuard {
     }
 
     /* Allow item's owner to accept offer and recive his profit */
-    function AcceptOffer(uint256 offerId, address approval) onlyApprovals public {
+    function AcceptOffer(uint256 offerId, address approval) public onlyApprovals {
         IStorageOA iStorage = IStorageOA(address_storage);
         IStorageOA.StorageItem memory item = iStorage.getItem(offers[offerId].itemId);
 
@@ -81,7 +81,7 @@ contract OffersOA is ApprovalsGuard {
     }
 
     /* Allows user to claim items */
-    function claimItem(uint256 offerId, address claimer) onlyApprovals public {
+    function claimItem(uint256 offerId, address claimer) public onlyApprovals {
         IStorageOA iStorage = IStorageOA(address_storage);
         IStorageOA.StorageItem memory item = iStorage.getItem(offers[offerId].itemId);
         require(offers[offerId].accepted, "The offer has not been accepted");
@@ -138,7 +138,7 @@ contract OffersOA is ApprovalsGuard {
     }
 
     /* Set storage address */
-    function setStorageAddress (address _address_storage) onlyOwner public {
+    function setStorageAddress (address _address_storage) public onlyOwner {
         address_storage = _address_storage;
     }
 }
