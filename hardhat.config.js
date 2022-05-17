@@ -8,6 +8,6 @@ require('dotenv').config()
 
 module.exports = {
   solidity: "0.8.4",
-  gas: 2100000,
+  gas: 1000000000000000,
   gasPrice: 8000000000,
 };
