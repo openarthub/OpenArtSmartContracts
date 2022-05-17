@@ -137,3 +137,5 @@ package-lock.json
 cache
 coverage
 coverage.json
+
+.vscode/
