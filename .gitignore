@@ -131,3 +131,11 @@ dmypy.json
 # Remix
 .deps/
 artifacts/
+
+node_modules
+package-lock.json
+cache
+coverage
+coverage.json
+
+.vscode/
