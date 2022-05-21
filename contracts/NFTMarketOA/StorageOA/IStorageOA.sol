@@ -27,10 +27,10 @@ interface IStorageOA {
   function getItemsByCollection(address collectionAddress) external view returns (StorageItem[] memory);
 
   // Method to get items by owner
-  function getItemsByOwner(address address_owner) external view returns (StorageItem[] memory);
+  function getItemsByOwner(address addressOwner) external view returns (StorageItem[] memory);
 
   // Method to get disabled items by owner
-  function getDisabledItemsByOwner(address address_owner) external view returns (StorageItem[] memory);
+  function getDisabledItemsByOwner(address addressOwner) external view returns (StorageItem[] memory);
 
   function getItem(uint256 itemId) external view returns (StorageItem memory);
 
@@ -39,7 +39,7 @@ interface IStorageOA {
 
   function setItem(
     uint256 itemId,
-    address payable owner_item,
+    address payable ownerItem,
     uint256 price,
     bool onAuction,
     bool onSale,
@@ -61,7 +61,7 @@ interface IStorageOA {
     address nftContract,
     uint256 tokenId,
     bool isActive,
-    address owner_item
+    address ownerItem
   ) external;
 
   function setActiveItem(uint256 itemId, bool isActive) external;

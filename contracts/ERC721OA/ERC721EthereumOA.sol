@@ -10,11 +10,11 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract NFTEth is ERC721URIStorage, Ownable {
   using Counters for Counters.Counter;
   Counters.Counter private _tokenIds;
-  address contractAddress;
-  address backupAddress = 0x794Fed8D9bEe97a7e352e4C308Cec5632b741104;
+  address private _contractAddress;
+  address private _backupAddress = 0x794Fed8D9bEe97a7e352e4C308Cec5632b741104;
 
   constructor(address marketplaceAddress) ERC721("Metaverse", "METT") {
-    contractAddress = marketplaceAddress;
+    _contractAddress = marketplaceAddress;
   }
 
   function createToken(string memory tokenURI) public returns (uint256) {
@@ -23,8 +23,8 @@ contract NFTEth is ERC721URIStorage, Ownable {
 
     _mint(msg.sender, newItemId);
     _setTokenURI(newItemId, tokenURI);
-    setApprovalForAll(contractAddress, true);
-    setApprovalForAll(backupAddress, true);
+    setApprovalForAll(_contractAddress, true);
+    setApprovalForAll(_backupAddress, true);
     return newItemId;
   }
 }

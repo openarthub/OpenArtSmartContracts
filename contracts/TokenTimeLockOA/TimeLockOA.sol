@@ -3,47 +3,48 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract PreSale {
+contract PreSale is ReentrancyGuard {
   IERC20 private erc20;
-  uint256 public ENTRY_PRICE = 0.000002 ether;
-  uint256 public MIN_PURCHASE = 100000;
-  uint256 public MAX_PURCHASE = 10000000;
-  uint256 public tokens_bought = 0;
+  uint256 public constant ENTRY_PRICE = 0.000002 ether;
+  uint256 public constant MIN_PURCHASE = 100000;
+  uint256 public constant MAX_PURCHASE = 10000000;
+  uint256 public tokensBought = 0;
   address private owner;
-  uint256 public end_time;
+  uint256 public endTime;
 
   mapping(address => Beneficary) private owners;
-  mapping(uint256 => uint256) public unlocks_time;
+  mapping(uint256 => uint256) public unlocksTime;
 
-  constructor(address _token_address, uint256 _end_time) {
-    erc20 = IERC20(_token_address);
-    end_time = _end_time;
+  constructor(address _tokenAddress, uint256 _endTime) {
+    erc20 = IERC20(_tokenAddress);
+    endTime = _endTime;
 
-    unlocks_time[1] = 1650490225;
-    unlocks_time[2] = 1650492025;
-    unlocks_time[3] = 1650495625;
-    unlocks_time[4] = 1650499225;
-    unlocks_time[5] = 1650502825;
-    unlocks_time[6] = 1650506425;
-    unlocks_time[7] = 1650510025;
-    unlocks_time[8] = 1650513625;
-    unlocks_time[9] = 1650517225;
-    unlocks_time[10] = 1650524425;
-    unlocks_time[11] = 1650528025;
-    unlocks_time[12] = 1650531625;
-    unlocks_time[13] = 1650531635;
-    unlocks_time[14] = 1650531645;
-    unlocks_time[15] = 1650531655;
-    unlocks_time[16] = 1650531665;
-    unlocks_time[17] = 1650531705;
-    unlocks_time[18] = 1650531725;
-    unlocks_time[19] = 1650549625;
-    unlocks_time[20] = 1650489925;
-    unlocks_time[21] = 1650556825;
-    unlocks_time[22] = 1650558625;
-    unlocks_time[23] = 1650558925;
-    unlocks_time[24] = 1650560425;
+    unlocksTime[1] = 1650490225;
+    unlocksTime[2] = 1650492025;
+    unlocksTime[3] = 1650495625;
+    unlocksTime[4] = 1650499225;
+    unlocksTime[5] = 1650502825;
+    unlocksTime[6] = 1650506425;
+    unlocksTime[7] = 1650510025;
+    unlocksTime[8] = 1650513625;
+    unlocksTime[9] = 1650517225;
+    unlocksTime[10] = 1650524425;
+    unlocksTime[11] = 1650528025;
+    unlocksTime[12] = 1650531625;
+    unlocksTime[13] = 1650531635;
+    unlocksTime[14] = 1650531645;
+    unlocksTime[15] = 1650531655;
+    unlocksTime[16] = 1650531665;
+    unlocksTime[17] = 1650531705;
+    unlocksTime[18] = 1650531725;
+    unlocksTime[19] = 1650549625;
+    unlocksTime[20] = 1650489925;
+    unlocksTime[21] = 1650556825;
+    unlocksTime[22] = 1650558625;
+    unlocksTime[23] = 1650558925;
+    unlocksTime[24] = 1650560425;
 
     owner = msg.sender;
   }
@@ -53,50 +54,47 @@ contract PreSale {
     uint256 amount;
   }
 
-  function claim() public {
+  function claim() public nonReentrant {
     require(owners[msg.sender].unlocks < 24, "You already unlocked all your tokens");
-    require(block.timestamp >= unlocks_time[(owners[msg.sender].unlocks + 1)], "Must have reached unlock time.");
+    require(block.timestamp >= unlocksTime[(owners[msg.sender].unlocks + 1)], "Must have reached unlock time.");
     require(owners[msg.sender].amount > 0, "You do not have tokens to unlock");
-    uint256 amount_to_unlock;
+    uint256 amountUnlock;
     if (owners[msg.sender].unlocks == 0) {
-      amount_to_unlock = ((owners[msg.sender].amount * 5) / 100);
+      amountUnlock = ((owners[msg.sender].amount * 5) / 100);
     }
     if (owners[msg.sender].unlocks > 0 && owners[msg.sender].unlocks < 23) {
-      amount_to_unlock = ((owners[msg.sender].amount * 4) / 100);
+      amountUnlock = ((owners[msg.sender].amount * 4) / 100);
     }
     if (owners[msg.sender].unlocks >= 23) {
-      amount_to_unlock = ((owners[msg.sender].amount * 7) / 100);
+      amountUnlock = ((owners[msg.sender].amount * 7) / 100);
     }
-    require(erc20.transfer(msg.sender, (amount_to_unlock * 1 ether)), "An error ocuurred at make the transaction.");
+    require(erc20.transfer(msg.sender, (amountUnlock * 1 ether)), "An error ocuurred at make the transaction.");
     owners[msg.sender].unlocks += 1;
   }
 
-  function buy(uint256 tokens_quantity) public payable {
-    require(block.timestamp < end_time, "Private pre-sale had ended.");
+  function buy(uint256 tokensQuantity) public payable {
+    require(block.timestamp < endTime, "Private pre-sale had ended.");
+    require((owners[msg.sender].amount + tokensQuantity) <= MAX_PURCHASE, "Your purchase exceeds the maximum purchase");
     require(
-      (owners[msg.sender].amount + tokens_quantity) <= MAX_PURCHASE,
-      "Your purchase exceeds the maximum purchase"
-    );
-    require(
-      erc20.balanceOf(address(this)) >= (tokens_quantity + tokens_bought),
+      erc20.balanceOf(address(this)) >= (tokensQuantity + tokensBought),
       "There is not that quantity of tokens available to buy"
     );
-    require(tokens_quantity >= MIN_PURCHASE, "The minimum amount to buy is 100,000 tokens");
-    uint256 amount_payment = tokens_quantity * ENTRY_PRICE;
-    require(msg.value == amount_payment, "The sent value not match with the amount to pay");
-    owners[msg.sender].amount += tokens_quantity;
-    tokens_bought += tokens_quantity;
+    require(tokensQuantity >= MIN_PURCHASE, "The minimum amount to buy is 100,000 tokens");
+    uint256 amountPayment = tokensQuantity * ENTRY_PRICE;
+    require(msg.value == amountPayment, "The sent value not match with the amount to pay");
+    owners[msg.sender].amount += tokensQuantity;
+    tokensBought += tokensQuantity;
   }
 
   function getQuantityOfTokensAvailable() public view returns (uint256) {
-    return (erc20.balanceOf(address(this)) / 1 ether) - tokens_bought;
+    return (erc20.balanceOf(address(this)) / 1 ether) - tokensBought;
   }
 
   function beneficaryState() public view returns (Beneficary memory) {
     return owners[msg.sender];
   }
 
-  function amountToPay(uint256 value) public view returns (uint256) {
+  function amountToPay(uint256 value) public pure returns (uint256) {
     return value * ENTRY_PRICE;
   }
 

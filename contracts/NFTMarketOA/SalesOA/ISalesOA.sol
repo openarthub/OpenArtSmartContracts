@@ -26,5 +26,5 @@ interface ISalesOA {
   function deactivateSale(uint256 itemId, address seller) external;
 
   /* Set storage address */
-  function setStorageAddress(address _address_storage) external;
+  function setStorageAddress(address addressStorage) external;
 }
