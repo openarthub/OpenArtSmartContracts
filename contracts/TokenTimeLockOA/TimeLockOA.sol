@@ -92,8 +92,8 @@ contract PreSale {
     return (erc20.balanceOf(address(this)) / 1 ether) - tokens_bought;
   }
 
-  function beneficaryState() public view returns (Beneficary memory) {
-    return owners[msg.sender];
+  function beneficaryState(address beneficaryAddress) public view returns (Beneficary memory) {
+    return owners[beneficaryAddress];
   }
 
   function amountToPay(uint256 value) public view returns (uint256) {
