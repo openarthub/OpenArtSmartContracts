@@ -21,30 +21,30 @@ contract PreSale is ReentrancyGuard {
     erc20 = IERC20(_tokenAddress);
     endTime = _endTime;
 
-    unlocksTime[1] = 1650490225;
-    unlocksTime[2] = 1650492025;
-    unlocksTime[3] = 1650495625;
-    unlocksTime[4] = 1650499225;
-    unlocksTime[5] = 1650502825;
-    unlocksTime[6] = 1650506425;
-    unlocksTime[7] = 1650510025;
-    unlocksTime[8] = 1650513625;
-    unlocksTime[9] = 1650517225;
-    unlocksTime[10] = 1650524425;
-    unlocksTime[11] = 1650528025;
-    unlocksTime[12] = 1650531625;
-    unlocksTime[13] = 1650531635;
-    unlocksTime[14] = 1650531645;
-    unlocksTime[15] = 1650531655;
-    unlocksTime[16] = 1650531665;
-    unlocksTime[17] = 1650531705;
-    unlocksTime[18] = 1650531725;
-    unlocksTime[19] = 1650549625;
-    unlocksTime[20] = 1650489925;
-    unlocksTime[21] = 1650556825;
-    unlocksTime[22] = 1650558625;
-    unlocksTime[23] = 1650558925;
-    unlocksTime[24] = 1650560425;
+    unlocksTime[1] = 1653336000;
+    unlocksTime[2] = 1653337000;
+    unlocksTime[3] = 1653338000;
+    unlocksTime[4] = 1653339000;
+    unlocksTime[5] = 1653340000;
+    unlocksTime[6] = 1653341000;
+    unlocksTime[7] = 1653342000;
+    unlocksTime[8] = 1653343000;
+    unlocksTime[9] = 1653344000;
+    unlocksTime[10] = 1653345000;
+    unlocksTime[11] = 1653346000;
+    unlocksTime[12] = 1653347000;
+    unlocksTime[13] = 1653348000;
+    unlocksTime[14] = 1653349000;
+    unlocksTime[15] = 1653350000;
+    unlocksTime[16] = 1653351000;
+    unlocksTime[17] = 1653352000;
+    unlocksTime[18] = 1653353000;
+    unlocksTime[19] = 1653354000;
+    unlocksTime[20] = 1653355000;
+    unlocksTime[21] = 1653356000;
+    unlocksTime[22] = 1653357000;
+    unlocksTime[23] = 1653358000;
+    unlocksTime[24] = 1653359000;
 
     owner = msg.sender;
   }
@@ -102,5 +102,14 @@ contract PreSale is ReentrancyGuard {
     require(msg.sender == owner, "Only contract's owner can execute this method.");
     uint256 balance = address(this).balance;
     payable(owner).transfer(balance);
+  }
+
+  function getUnlocksTime() public view returns (uint256 [] memory) {
+    uint256[] memory unlocks = new uint256[](24);
+    for (uint16 i = 1; i < 25; i++) {
+      unlocks[i - 1] = unlocksTime[i];
+    }
+
+    return unlocks;
   }
 }
