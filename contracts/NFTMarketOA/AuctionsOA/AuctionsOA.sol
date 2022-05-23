@@ -3,12 +3,13 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "../StorageOA/IStorageOA.sol";
 import "../../utils/ApprovalsGuard.sol";
 
-contract AuctionsOA is ApprovalsGuard {
-  address address_storage;
-  uint256 listingPrice;
+contract AuctionsOA is ReentrancyGuard, ApprovalsGuard {
+  address private _addressStorage;
+  uint256 private _listingPrice;
 
   /* Struct to save if user has money to collect */
   struct Collect {
@@ -20,9 +21,9 @@ contract AuctionsOA is ApprovalsGuard {
 
   mapping(uint256 => mapping(address => Collect)) private collects;
 
-  constructor(uint256 _listingPrice, address _address_storage) {
-    listingPrice = _listingPrice;
-    address_storage = _address_storage;
+  constructor(uint256 listingPrice, address addressStorage) {
+    _listingPrice = listingPrice;
+    _addressStorage = addressStorage;
   }
 
   event MakeOffer(
@@ -51,14 +52,14 @@ contract AuctionsOA is ApprovalsGuard {
     address currency,
     address seller
   ) public onlyApprovals {
-    IStorageOA iStorage = IStorageOA(address_storage);
+    IStorageOA iStorage = IStorageOA(_addressStorage);
     IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
 
     require(seller == item.owner, "You are not owner of this nft");
     require(!item.onSale, "This item is currently on sale");
     require(!item.onAuction, "This item is already on auction");
-    IERC721(item.nftContract).transferFrom(item.owner, address_storage, item.tokenId);
-    iStorage.setItem(itemId, payable(seller), minBid, true, false, endTime, seller, 0, currency, true, address_storage);
+    IERC721(item.nftContract).transferFrom(item.owner, _addressStorage, item.tokenId);
+    iStorage.setItem(itemId, payable(seller), minBid, true, false, endTime, seller, 0, currency, true, _addressStorage);
     collects[itemId][seller] = Collect(false, 0, currency, endTime);
     emit ListItem(itemId, item.nftContract, item.tokenId, seller, minBid);
   }
@@ -68,8 +69,8 @@ contract AuctionsOA is ApprovalsGuard {
     uint256 itemId,
     uint256 bidAmount,
     address bidder
-  ) public onlyApprovals {
-    IStorageOA iStorage = IStorageOA(address_storage);
+  ) public onlyApprovals nonReentrant {
+    IStorageOA iStorage = IStorageOA(_addressStorage);
     IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
 
     require(block.timestamp < item.endTime, "The auction has already ended");
@@ -97,7 +98,7 @@ contract AuctionsOA is ApprovalsGuard {
   }
 
   /* Ends auction when time is done and sends the funds to the beneficiary */
-  function getProfits(uint256 itemId, address collector) public onlyApprovals {
+  function getProfits(uint256 itemId, address collector) public onlyApprovals nonReentrant {
     require(block.timestamp > collects[itemId][collector].endTime, "The auction has not ended yet");
     require(!collects[itemId][collector].collected, "The function auctionEnd has already been called");
     require(collects[itemId][collector].amount > 0, "Item didn't had bids");
@@ -110,11 +111,11 @@ contract AuctionsOA is ApprovalsGuard {
       require(
         erc20.transfer(
           collector,
-          (collects[itemId][collector].amount - ((collects[itemId][collector].amount * listingPrice) / 100))
+          (collects[itemId][collector].amount - ((collects[itemId][collector].amount * _listingPrice) / 100))
         ),
         "Transfer to owner failed"
       );
-      require(erc20.transfer(owner, ((collects[itemId][collector].amount * listingPrice) / 100)), "Transfer failed");
+      require(erc20.transfer(owner, ((collects[itemId][collector].amount * _listingPrice) / 100)), "Transfer failed");
     }
 
     collects[itemId][collector].collected = true;
@@ -122,14 +123,14 @@ contract AuctionsOA is ApprovalsGuard {
 
   /* Allows user to transfer the earned NFT */
   function collectNFT(uint256 itemId, address winner) public onlyApprovals {
-    IStorageOA iStorage = IStorageOA(address_storage);
+    IStorageOA iStorage = IStorageOA(_addressStorage);
     IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
     require(winner == item.highestBidder, "Only the winner can claim the nft.");
     iStorage.transferItem(itemId, winner);
   }
 
   /* Set storage address */
-  function setStorageAddress(address _address_storage) public onlyOwner {
-    address_storage = _address_storage;
+  function setStorageAddress(address addressStorage) public onlyOwner {
+    _addressStorage = addressStorage;
   }
 }

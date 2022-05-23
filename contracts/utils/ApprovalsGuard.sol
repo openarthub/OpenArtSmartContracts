@@ -21,8 +21,8 @@ abstract contract ApprovalsGuard {
     _;
   }
 
-  function setApproval(address approve_address, bool approved) public onlyOwner {
+  function setApproval(address approveAddress, bool approved) public onlyOwner {
     require(msg.sender == owner, "You are not allowed to execute this function");
-    _approvals[approve_address] = approved;
+    _approvals[approveAddress] = approved;
   }
 }

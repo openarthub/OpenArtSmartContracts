@@ -109,20 +109,20 @@ contract StorageOA is ApprovalsGuard {
   }
 
   // Method to get items by owner
-  function getItemsByOwner(address address_owner) public view returns (StorageItem[] memory) {
+  function getItemsByOwner(address addressOwner) public view returns (StorageItem[] memory) {
     uint256 totalItemCount = _itemIds.current();
     uint256 itemCount = 0;
     uint256 currentIndex = 0;
 
     for (uint256 i = 0; i < totalItemCount; i++) {
-      if (storedItems[i + 1].owner == address_owner) {
+      if (storedItems[i + 1].owner == addressOwner) {
         itemCount += 1;
       }
     }
 
     StorageItem[] memory items = new StorageItem[](itemCount);
     for (uint256 i = 0; i < totalItemCount; i++) {
-      if (storedItems[i + 1].owner == address_owner) {
+      if (storedItems[i + 1].owner == addressOwner) {
         uint256 currentId = i + 1;
         StorageItem storage currentItem = storedItems[currentId];
         items[currentIndex] = currentItem;
@@ -133,20 +133,20 @@ contract StorageOA is ApprovalsGuard {
   }
 
   // Method to get disabled items by owner
-  function getDisabledItemsByOwner(address address_owner) public view onlyApprovals returns (StorageItem[] memory) {
+  function getDisabledItemsByOwner(address addressOwner) public view onlyApprovals returns (StorageItem[] memory) {
     uint256 totalItemCount = _itemIds.current();
     uint256 itemCount = 0;
     uint256 currentIndex = 0;
 
     for (uint256 i = 0; i < totalItemCount; i++) {
-      if (storedItems[i + 1].owner == address_owner && !storedItems[i + 1].isActive) {
+      if (storedItems[i + 1].owner == addressOwner && !storedItems[i + 1].isActive) {
         itemCount += 1;
       }
     }
 
     StorageItem[] memory items = new StorageItem[](itemCount);
     for (uint256 i = 0; i < totalItemCount; i++) {
-      if (storedItems[i + 1].owner == address_owner && !storedItems[i + 1].isActive) {
+      if (storedItems[i + 1].owner == addressOwner && !storedItems[i + 1].isActive) {
         uint256 currentId = i + 1;
         StorageItem storage currentItem = storedItems[currentId];
         items[currentIndex] = currentItem;
@@ -175,7 +175,7 @@ contract StorageOA is ApprovalsGuard {
 
   function setItem(
     uint256 itemId,
-    address payable owner_item,
+    address payable ownerItem,
     uint256 price,
     bool onAuction,
     bool onSale,
@@ -186,7 +186,7 @@ contract StorageOA is ApprovalsGuard {
     bool isActive,
     address stored
   ) public onlyApprovals {
-    storedItems[itemId].owner = owner_item;
+    storedItems[itemId].owner = ownerItem;
     storedItems[itemId].price = price;
     storedItems[itemId].onAuction = onAuction;
     storedItems[itemId].onSale = onSale;
@@ -211,9 +211,9 @@ contract StorageOA is ApprovalsGuard {
     address nftContract,
     uint256 tokenId,
     bool isActive,
-    address owner_item
+    address ownerItem
   ) public onlyApprovals {
-    require(IERC721(nftContract).ownerOf(tokenId) == owner_item, "You are not owner of this nft.");
+    require(IERC721(nftContract).ownerOf(tokenId) == ownerItem, "You are not owner of this nft.");
 
     _itemIds.increment();
     uint256 itemId = _itemIds.current();
@@ -221,7 +221,7 @@ contract StorageOA is ApprovalsGuard {
       itemId,
       nftContract,
       tokenId,
-      payable(owner_item),
+      payable(ownerItem),
       0,
       false,
       false,
@@ -233,7 +233,7 @@ contract StorageOA is ApprovalsGuard {
       address(0)
     );
 
-    emit ItemCreated(itemId, nftContract, tokenId, owner_item);
+    emit ItemCreated(itemId, nftContract, tokenId, ownerItem);
   }
 
   function setActiveItem(uint256 itemId, bool isActive) public {
