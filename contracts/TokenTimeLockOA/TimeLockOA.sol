@@ -13,12 +13,14 @@ contract PreSale is ReentrancyGuard {
   uint256 public tokensBought = 0;
   address private owner;
   uint256 public endTime;
+  uint256 public startTime;
 
   mapping(address => Beneficary) private owners;
   mapping(uint256 => uint256) public unlocksTime;
 
-  constructor(address _tokenAddress, uint256 _endTime) {
+  constructor(address _tokenAddress, uint256 _startTime, uint256 _endTime) {
     erc20 = IERC20(_tokenAddress);
+    startTime = _startTime;
     endTime = _endTime;
 
     unlocksTime[1] = 1653336000;
@@ -73,7 +75,8 @@ contract PreSale is ReentrancyGuard {
   }
 
   function buy(uint256 tokensQuantity) public payable {
-    require(block.timestamp < endTime, "Private pre-sale had ended.");
+    require(block.timestamp < endTime, "Pre-sale has ended.");
+    require(block.timestamp >= startTime, "Pre-sale has not started yet.");
     require((owners[msg.sender].amount + tokensQuantity) <= MAX_PURCHASE, "Your purchase exceeds the maximum purchase");
     require(
       erc20.balanceOf(address(this)) >= (tokensQuantity + tokensBought),
