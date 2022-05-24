@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts v4.4.1 (token/ERC20/ERC20.sol)
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
@@ -42,10 +42,10 @@ contract ERC20OA is Context, IERC20, IERC20Metadata {
   mapping(address => mapping(address => uint256)) private _allowances;
   mapping(uint256 => address) private _holders;
 
-  mapping(string => address) private beneficiaryAddresses;
-  mapping(address => bool) public exempt_fees_in;
-  mapping(address => bool) public exempt_fees_out;
-  address adminAddress;
+  mapping(string => address) private _beneficiaryAddresses;
+  mapping(address => bool) public _exemptFeesIn;
+  mapping(address => bool) public _exemptFeesOut;
+  address private _adminAddress;
 
   uint256 private _totalSupply;
 
@@ -64,7 +64,7 @@ contract ERC20OA is Context, IERC20, IERC20Metadata {
   constructor(
     string memory name_,
     string memory symbol_,
-    address _adminAddress,
+    address adminAddress,
     address _marketingAddress,
     address _developmentAddress,
     address _helpingAddress,
@@ -72,11 +72,11 @@ contract ERC20OA is Context, IERC20, IERC20Metadata {
   ) {
     _name = name_;
     _symbol = symbol_;
-    adminAddress = _adminAddress;
-    beneficiaryAddresses["marketing"] = _marketingAddress;
-    beneficiaryAddresses["development"] = _developmentAddress;
-    beneficiaryAddresses["helping"] = _helpingAddress;
-    beneficiaryAddresses["rewards"] = _rewardsAddress;
+    _adminAddress = adminAddress;
+    _beneficiaryAddresses["marketing"] = _marketingAddress;
+    _beneficiaryAddresses["development"] = _developmentAddress;
+    _beneficiaryAddresses["helping"] = _helpingAddress;
+    _beneficiaryAddresses["rewards"] = _rewardsAddress;
     _mint(msg.sender, 10000000 ether);
   }
 
@@ -259,14 +259,14 @@ contract ERC20OA is Context, IERC20, IERC20Metadata {
       _balances[sender] = senderBalance - amount;
     }
 
-    if (exempt_fees_out[sender] || exempt_fees_in[recipient]) {
+    if (_exemptFeesOut[sender] || _exemptFeesIn[recipient]) {
       _balances[recipient] += amount;
     } else {
       _balances[recipient] += (amount - ((amount * 5) / 100));
-      _balances[beneficiaryAddresses["marketing"]] += (amount / 100);
-      _balances[beneficiaryAddresses["development"]] += (amount / 100);
-      _balances[beneficiaryAddresses["helping"]] += (amount / 100);
-      _balances[beneficiaryAddresses["rewards"]] += (amount / 100);
+      _balances[_beneficiaryAddresses["marketing"]] += (amount / 100);
+      _balances[_beneficiaryAddresses["development"]] += (amount / 100);
+      _balances[_beneficiaryAddresses["helping"]] += (amount / 100);
+      _balances[_beneficiaryAddresses["rewards"]] += (amount / 100);
 
       uint256 totalHolders = getHoldersQuantity();
       uint256 amountHolder = ((amount / 100) / totalHolders);
@@ -406,29 +406,29 @@ contract ERC20OA is Context, IERC20, IERC20Metadata {
   ) internal virtual {}
 
   function setBeneficiaryAddress(string memory key, address beneficiaryAddress) public {
-    require(msg.sender == adminAddress, "You are not allowed to execute this function");
+    require(msg.sender == _adminAddress, "ERC20: You are not admin.");
     require(
       (keccak256(bytes(key)) == keccak256(bytes("marketing")) ||
         keccak256(bytes(key)) == keccak256(bytes("development")) ||
         keccak256(bytes(key)) == keccak256(bytes("helping")) ||
         keccak256(bytes(key)) == keccak256(bytes("rewards")) ||
         keccak256(bytes(key)) == keccak256(bytes("holders"))),
-      "The enter key addres is not available, the keys allowed are marketing, development, helping, and rewards"
+      "ERC20: Key no available."
     );
-    beneficiaryAddresses[key] = beneficiaryAddress;
+    _beneficiaryAddresses[key] = beneficiaryAddress;
   }
 
   function getBeneficiaryAddress(string memory key) public view returns (address) {
-    require(msg.sender == adminAddress, "You are not allowed to execute this function");
+    require(msg.sender == _adminAddress, "ERC20: You are not admin.");
     require(
       (keccak256(bytes(key)) == keccak256(bytes("marketing")) ||
         keccak256(bytes(key)) == keccak256(bytes("development")) ||
         keccak256(bytes(key)) == keccak256(bytes("helping")) ||
         keccak256(bytes(key)) == keccak256(bytes("rewards")) ||
         keccak256(bytes(key)) == keccak256(bytes("holders"))),
-      "The enter key addres is not available, the keys allowed are marketing, development, helping, and rewards"
+      "ERC20: Key no available."
     );
-    return beneficiaryAddresses[key];
+    return _beneficiaryAddresses[key];
   }
 
   function isHolder(address _address) private view returns (bool) {
@@ -455,12 +455,12 @@ contract ERC20OA is Context, IERC20, IERC20Metadata {
   }
 
   function setExemptFeesIn(address addresContract, bool exempt) public {
-    require(msg.sender == adminAddress, "You are not allowed to execute this method.");
-    exempt_fees_in[addresContract] = exempt;
+    require(msg.sender == _adminAddress, "ERC20: You are not admin.");
+    _exemptFeesIn[addresContract] = exempt;
   }
 
   function setExemptFeesOut(address addresContract, bool exempt) public {
-    require(msg.sender == adminAddress, "You are not allowed to execute this method.");
-    exempt_fees_out[addresContract] = exempt;
+    require(msg.sender == _adminAddress, "ERC20: You are not admin.");
+    _exemptFeesOut[addresContract] = exempt;
   }
 }

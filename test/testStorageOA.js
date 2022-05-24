@@ -6,25 +6,8 @@ const marketOAArtifact = require('../artifacts/contracts/NFTMarketOA/NFTMarketOA
 
 use(solidity)
 
-describe('CreateItem', () => {
-  const [wallet, walletTo] = new MockProvider().getWallets();
-  let storageOA
+describe('Storage Contract', () => {
 
-  beforeEach(async () => {
-    storageOA = await deployContract(
-      wallet,
-      storageOAArtifact,
-      ['0x0000000000000000000000000000000000000000'])
-  })
-
-  it('Should execute only if caller address is in approvals', async () => {
-    await expect(
-      storageOA.getDisabledItemsByOwner(wallet.address)
-    ).to.be.revertedWith('You are not allowed to execute this method')
-  });
-})
-
-describe('Constructor', () => {
   const provider = new MockProvider()
   const [wallet, walletTo] = provider.getWallets();
   const wallets = provider.getWallets()
@@ -98,9 +81,21 @@ describe('Constructor', () => {
     )
   })
 
-  it('Should return the same items than the previous contract', async () => {
-    const items = await marketOA.fetchMarketItems()
-    expect((await storageOA.getItems()).length).to.be.equals(items.length)
-  })
+  describe('CreateItem', () => {
+    const [wallet] = new MockProvider().getWallets();
 
-})
+    it('Should execute only if caller address is in approvals', async () => {
+      await expect(
+        storageOA.getDisabledItemsByOwner(wallet.address)
+      ).to.be.revertedWith('You are not allowed to execute this method')
+    });
+  })
+  
+  describe('Constructor', () => {
+    it('Should return the same items than the previous contract', async () => {
+      const items = await marketOA.fetchMarketItems()
+      expect((await storageOA.getItems()).length).to.be.equals(items.length)
+    })
+  })
+});
+

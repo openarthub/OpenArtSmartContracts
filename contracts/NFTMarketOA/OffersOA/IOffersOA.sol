@@ -21,7 +21,7 @@ interface IOffersOA {
   ) external;
 
   /* Allow item's owner to accept offer and recive his profit */
-  function AcceptOffer(uint256 offerId, address approval) external;
+  function acceptOffer(uint256 offerId, address approval) external;
 
   /* Allows user to claim items */
   function claimItem(uint256 offerId, address claimer) external;
@@ -33,5 +33,5 @@ interface IOffersOA {
   function getActiveOffersByItem(uint256 itemId) external view returns (Offer[] memory);
 
   /* Set storage address */
-  function setStorageAddress(address _address_storage) external;
+  function setStorageAddress(address addressStorage) external;
 }

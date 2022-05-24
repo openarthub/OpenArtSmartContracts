@@ -3,15 +3,16 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../StorageOA/IStorageOA.sol";
 import "../../utils/ApprovalsGuard.sol";
 
-contract OffersOA is ApprovalsGuard {
+contract OffersOA is ReentrancyGuard, ApprovalsGuard {
   using Counters for Counters.Counter;
   Counters.Counter private _offerIds;
-  address address_storage;
-  uint256 listingPrice;
+  address private _addressStorage;
+  uint256 private _listingPrice;
 
   /* Struct to save if user has money to collect */
   struct Offer {
@@ -25,9 +26,9 @@ contract OffersOA is ApprovalsGuard {
 
   mapping(uint256 => Offer) private offers;
 
-  constructor(uint256 _listingPrice, address _address_storage) {
-    listingPrice = _listingPrice;
-    address_storage = _address_storage;
+  constructor(uint256 listingPrice, address addressStorage) {
+    _listingPrice = listingPrice;
+    _addressStorage = addressStorage;
   }
 
   event MakeOffer(
@@ -48,7 +49,7 @@ contract OffersOA is ApprovalsGuard {
     uint256 endTime,
     address currency
   ) public onlyApprovals {
-    IStorageOA iStorage = IStorageOA(address_storage);
+    IStorageOA iStorage = IStorageOA(_addressStorage);
     IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
 
     require(!item.onAuction, "This item is currently on auction");
@@ -64,8 +65,8 @@ contract OffersOA is ApprovalsGuard {
   }
 
   /* Allow item's owner to accept offer and recive his profit */
-  function AcceptOffer(uint256 offerId, address approval) public onlyApprovals {
-    IStorageOA iStorage = IStorageOA(address_storage);
+  function acceptOffer(uint256 offerId, address approval) public onlyApprovals nonReentrant {
+    IStorageOA iStorage = IStorageOA(_addressStorage);
     IStorageOA.StorageItem memory item = iStorage.getItem(offers[offerId].itemId);
 
     require(item.owner == approval, "You are not the owner of this item");
@@ -79,10 +80,10 @@ contract OffersOA is ApprovalsGuard {
       "Error at make transaction."
     );
     require(
-      erc20.transfer(item.owner, (offers[offerId].amount - ((offers[offerId].amount * listingPrice) / 100))),
+      erc20.transfer(item.owner, (offers[offerId].amount - ((offers[offerId].amount * _listingPrice) / 100))),
       "Transfer to owner failed"
     );
-    require(erc20.transfer(owner, ((offers[offerId].amount * listingPrice) / 100)), "Transfer failed");
+    require(erc20.transfer(owner, ((offers[offerId].amount * _listingPrice) / 100)), "Transfer failed");
     offers[offerId].accepted = true;
     iStorage.setItem(
       item.itemId,
@@ -101,7 +102,7 @@ contract OffersOA is ApprovalsGuard {
 
   /* Allows user to claim items */
   function claimItem(uint256 offerId, address claimer) public onlyApprovals {
-    IStorageOA iStorage = IStorageOA(address_storage);
+    IStorageOA iStorage = IStorageOA(_addressStorage);
     IStorageOA.StorageItem memory item = iStorage.getItem(offers[offerId].itemId);
     require(offers[offerId].accepted, "The offer has not been accepted");
     require(claimer == item.owner, "Only the winner can claim the nft.");
@@ -157,7 +158,7 @@ contract OffersOA is ApprovalsGuard {
   }
 
   /* Set storage address */
-  function setStorageAddress(address _address_storage) public onlyOwner {
-    address_storage = _address_storage;
+  function setStorageAddress(address addressStorage) public onlyOwner {
+    _addressStorage = addressStorage;
   }
 }
