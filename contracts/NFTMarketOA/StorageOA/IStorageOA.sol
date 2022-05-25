@@ -14,7 +14,6 @@ interface IStorageOA {
     uint256 endTime;
     address highestBidder;
     uint256 highestBid;
-    bool collectAvailable;
     address currency;
     bool isActive;
     address stored;
