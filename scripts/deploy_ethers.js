@@ -33,6 +33,9 @@ const main = async () => {
   console.log(`Presale smart contract deployed at ${presaleAddress}`)
 
   console.log('Deployment successful.')
+
+  const x = await presale.getUnlocksTime()
+  console.log(x)
 }
 
 main ()
