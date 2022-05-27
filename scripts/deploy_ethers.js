@@ -3,7 +3,6 @@ const hre = require("hardhat")
 
 const main = async () => {
   console.log('Running deployWithEthers script...')
-  /*
   const ERC20OA = await hre.ethers.getContractFactory('ERC20OA')
   const erc20OA = await ERC20OA.deploy(
     'test', // Name token
@@ -19,7 +18,7 @@ const main = async () => {
 
   const erc20OAAddress = erc20OA.address
   console.log(`ERC20OA smart contract deployed at ${erc20OAAddress}`)
-  */
+  
 
   const PresaleOA = await hre.ethers.getContractFactory('PreSale')
   const presale = await PresaleOA.deploy(

@@ -76,7 +76,7 @@ contract AuctionsOA is ReentrancyGuard, ApprovalsGuard {
     require(block.timestamp < item.endTime, "The auction has already ended");
     require(item.owner != bidder, "You are the owner of this nft");
     require(
-      (bidAmount > item.highestBid) || (bidAmount >= item.price && item.highestBid == 0),
+      (bidAmount > item.highestBid && item.highestBid > 0) || (bidAmount >= item.price && item.highestBid == 0),
       "There is already a higher or equal bid"
     );
 

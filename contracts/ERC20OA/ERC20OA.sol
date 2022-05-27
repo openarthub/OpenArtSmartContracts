@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "hardhat/console.sol";
 
 /**
  * @dev Implementation of the {IERC20} interface.
@@ -135,6 +136,7 @@ contract ERC20OA is Context, IERC20, IERC20Metadata {
    * - the caller must have a balance of at least `amount`.
    */
   function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
+    console.log("in transfer");
     _transfer(_msgSender(), recipient, amount);
     return true;
   }
@@ -259,6 +261,8 @@ contract ERC20OA is Context, IERC20, IERC20Metadata {
       _balances[sender] = senderBalance - amount;
     }
 
+    console.log("Balance was reduced");
+
     if (_exemptFeesOut[sender] || _exemptFeesIn[recipient]) {
       _balances[recipient] += amount;
     } else {
@@ -279,10 +283,14 @@ contract ERC20OA is Context, IERC20, IERC20Metadata {
       }
     }
 
+    console.log("Balance in beneficiary addresses");
+
     if (!isHolder(recipient)) {
       _holders[_holdersCounter.current()] = recipient;
       _holdersCounter.increment();
     }
+
+    console.log("Balance distribution completed");
 
     emit Transfer(sender, recipient, amount);
 
