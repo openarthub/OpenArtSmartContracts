@@ -51,7 +51,7 @@ contract AuctionsOA is ReentrancyGuard, ApprovalsGuard {
     uint256 minBid,
     address currency,
     address seller
-  ) public onlyApprovals {
+  ) external onlyApprovals {
     IStorageOA iStorage = IStorageOA(_addressStorage);
     IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
 
@@ -69,7 +69,7 @@ contract AuctionsOA is ReentrancyGuard, ApprovalsGuard {
     uint256 itemId,
     uint256 bidAmount,
     address bidder
-  ) public onlyApprovals nonReentrant {
+  ) external onlyApprovals nonReentrant {
     IStorageOA iStorage = IStorageOA(_addressStorage);
     IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
 
@@ -98,7 +98,7 @@ contract AuctionsOA is ReentrancyGuard, ApprovalsGuard {
   }
 
   /* Ends auction when time is done and sends the funds to the beneficiary */
-  function getProfits(uint256 itemId, address collector) public onlyApprovals nonReentrant {
+  function getProfits(uint256 itemId, address collector) external onlyApprovals nonReentrant {
     require(block.timestamp > collects[itemId][collector].endTime, "The auction has not ended yet");
     require(!collects[itemId][collector].collected, "The function auctionEnd has already been called");
     require(collects[itemId][collector].amount > 0, "Item didn't had bids");
@@ -122,7 +122,7 @@ contract AuctionsOA is ReentrancyGuard, ApprovalsGuard {
   }
 
   /* Allows user to transfer the earned NFT */
-  function collectNFT(uint256 itemId, address winner) public onlyApprovals {
+  function collectNFT(uint256 itemId, address winner) external onlyApprovals {
     IStorageOA iStorage = IStorageOA(_addressStorage);
     IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
     require(winner == item.highestBidder, "Only the winner can claim the nft.");
@@ -132,5 +132,10 @@ contract AuctionsOA is ReentrancyGuard, ApprovalsGuard {
   /* Set storage address */
   function setStorageAddress(address addressStorage) public onlyOwner {
     _addressStorage = addressStorage;
+  }
+
+  /* Get collects of user */
+  function getCollectItem(uint256 itemId, address sender) external view onlyApprovals returns(Collect memory) {
+    return collects[itemId][sender];
   }
 }

@@ -48,7 +48,7 @@ contract OffersOA is ReentrancyGuard, ApprovalsGuard {
     address bidder,
     uint256 endTime,
     address currency
-  ) public onlyApprovals {
+  ) external onlyApprovals {
     IStorageOA iStorage = IStorageOA(_addressStorage);
     IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
 
@@ -65,7 +65,7 @@ contract OffersOA is ReentrancyGuard, ApprovalsGuard {
   }
 
   /* Allow item's owner to accept offer and recive his profit */
-  function acceptOffer(uint256 offerId, address approval) public onlyApprovals nonReentrant {
+  function acceptOffer(uint256 offerId, address approval) external onlyApprovals nonReentrant {
     IStorageOA iStorage = IStorageOA(_addressStorage);
     IStorageOA.StorageItem memory item = iStorage.getItem(offers[offerId].itemId);
 
@@ -101,7 +101,7 @@ contract OffersOA is ReentrancyGuard, ApprovalsGuard {
   }
 
   /* Allows user to claim items */
-  function claimItem(uint256 offerId, address claimer) public onlyApprovals {
+  function claimItem(uint256 offerId, address claimer) external onlyApprovals {
     IStorageOA iStorage = IStorageOA(_addressStorage);
     IStorageOA.StorageItem memory item = iStorage.getItem(offers[offerId].itemId);
     require(offers[offerId].accepted, "The offer has not been accepted");
@@ -110,7 +110,7 @@ contract OffersOA is ReentrancyGuard, ApprovalsGuard {
   }
 
   /* Returns item's offers */
-  function getOffersByItem(uint256 itemId) public view returns (Offer[] memory) {
+  function getOffersByItem(uint256 itemId) external view returns (Offer[] memory) {
     uint256 totalItemCount = _offerIds.current();
     uint256 itemCount = 0;
     uint256 currentIndex = 0;
@@ -134,7 +134,7 @@ contract OffersOA is ReentrancyGuard, ApprovalsGuard {
   }
 
   /* Return item's offers currently active */
-  function getActiveOffersByItem(uint256 itemId) public view returns (Offer[] memory) {
+  function getActiveOffersByItem(uint256 itemId) external view returns (Offer[] memory) {
     uint256 totalItemCount = _offerIds.current();
     uint256 itemCount = 0;
     uint256 currentIndex = 0;

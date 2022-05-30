@@ -61,7 +61,7 @@ contract StorageOA is ApprovalsGuard {
   event ItemCreated(uint256 indexed itemId, address indexed nftContract, uint256 indexed tokenId, address owner);
 
   // Method to get all actives items
-  function getItems() public view returns (StorageItem[] memory) {
+  function getItems() external view returns (StorageItem[] memory) {
     uint256 totalItemCount = _itemIds.current();
     uint256 itemCount = 0;
     uint256 currentIndex = 0;
@@ -85,7 +85,7 @@ contract StorageOA is ApprovalsGuard {
   }
 
   // Method to get actives items by collection
-  function getItemsByCollection(address collectionAddress) public view returns (StorageItem[] memory) {
+  function getItemsByCollection(address collectionAddress) external view returns (StorageItem[] memory) {
     uint256 totalItemCount = _itemIds.current();
     uint256 itemCount = 0;
     uint256 currentIndex = 0;
@@ -109,7 +109,7 @@ contract StorageOA is ApprovalsGuard {
   }
 
   // Method to get items by owner
-  function getItemsByOwner(address addressOwner) public view returns (StorageItem[] memory) {
+  function getItemsByOwner(address addressOwner) external view returns (StorageItem[] memory) {
     uint256 totalItemCount = _itemIds.current();
     uint256 itemCount = 0;
     uint256 currentIndex = 0;
@@ -133,7 +133,7 @@ contract StorageOA is ApprovalsGuard {
   }
 
   // Method to get disabled items by owner
-  function getDisabledItemsByOwner(address addressOwner) public view onlyApprovals returns (StorageItem[] memory) {
+  function getDisabledItemsByOwner(address addressOwner) external view onlyApprovals returns (StorageItem[] memory) {
     uint256 totalItemCount = _itemIds.current();
     uint256 itemCount = 0;
     uint256 currentIndex = 0;
@@ -161,7 +161,7 @@ contract StorageOA is ApprovalsGuard {
   }
 
   /* Allows other contract to send this contract's nft */
-  function transferItem(uint256 itemId, address to) public onlyApprovals {
+  function transferItem(uint256 itemId, address to) external onlyApprovals {
     address nftContract = storedItems[itemId].nftContract;
     uint256 nftId = storedItems[itemId].tokenId;
     IERC721(nftContract).safeTransferFrom(address(this), to, nftId);
@@ -185,7 +185,7 @@ contract StorageOA is ApprovalsGuard {
     address currency,
     bool isActive,
     address stored
-  ) public onlyApprovals {
+  ) external onlyApprovals {
     storedItems[itemId].owner = ownerItem;
     storedItems[itemId].price = price;
     storedItems[itemId].onAuction = onAuction;
@@ -202,7 +202,7 @@ contract StorageOA is ApprovalsGuard {
     uint256 itemId,
     address highestBidder,
     uint256 highestBid
-  ) public onlyApprovals {
+  ) external onlyApprovals {
     storedItems[itemId].highestBidder = highestBidder;
     storedItems[itemId].highestBid = highestBid;
   }
@@ -212,7 +212,7 @@ contract StorageOA is ApprovalsGuard {
     uint256 tokenId,
     bool isActive,
     address ownerItem
-  ) public onlyApprovals {
+  ) external onlyApprovals {
     require(IERC721(nftContract).ownerOf(tokenId) == ownerItem, "You are not owner of this nft.");
 
     _itemIds.increment();
@@ -236,7 +236,7 @@ contract StorageOA is ApprovalsGuard {
     emit ItemCreated(itemId, nftContract, tokenId, ownerItem);
   }
 
-  function setActiveItem(uint256 itemId, bool isActive) public {
+  function setActiveItem(uint256 itemId, bool isActive) external {
     require(
       msg.sender == owner || msg.sender == storedItems[itemId].owner,
       "You are not allowed to modify this element"
