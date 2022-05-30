@@ -125,6 +125,7 @@ contract AuctionsOA is ReentrancyGuard, ApprovalsGuard {
   function collectNFT(uint256 itemId, address winner) external onlyApprovals {
     IStorageOA iStorage = IStorageOA(_addressStorage);
     IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
+    require(block.timestamp > item.endTime, "The auction has not ended yet");
     require(winner == item.highestBidder, "Only the winner can claim the nft.");
     iStorage.transferItem(itemId, winner);
   }
