@@ -1,4 +1,7 @@
 const hre = require("hardhat")
+require('dotenv').config()
+
+const adminAddress = process.env.ADMIN_ADDRESS
 
 const main = async () => {
   console.log('Running deployWithEthers script...')
@@ -6,7 +9,7 @@ const main = async () => {
   const erc20OA = await ERC20OA.deploy(
     'hardhatToken', // Name token
     'hht', // Symbol token
-    '0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc', // Address Admin
+    adminAddress, // Address Admin
     '0x70997970C51812dc3A010C7d01b50e0d17dc79C8', //Address Marketing
     '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC', // Address Development
     '0x90F79bf6EB2c4f870365E785982E1f101E93b906', // Helping address,
