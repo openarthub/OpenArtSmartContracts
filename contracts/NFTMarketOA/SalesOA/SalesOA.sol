@@ -38,7 +38,7 @@ contract SalesOA is ReentrancyGuard, ApprovalsGuard {
   }
 
   /* Transfers ownership of the item, as well as funds between parties */
-  function createMarketSale(uint256 itemId, address buyer) public payable onlyApprovals nonReentrant {
+  function createMarketSale(uint256 itemId, address buyer) external payable onlyApprovals nonReentrant {
     IStorageOA iStorage = IStorageOA(_addressStorage);
     IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
     require(item.onSale, "This Item is not on sale.");
@@ -75,7 +75,7 @@ contract SalesOA is ReentrancyGuard, ApprovalsGuard {
     uint256 price,
     address currency,
     address seller
-  ) public onlyApprovals {
+  ) external onlyApprovals {
     IStorageOA iStorage = IStorageOA(_addressStorage);
     IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
     require(seller == item.owner, "You are not owner of this nft");
