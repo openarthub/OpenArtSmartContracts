@@ -170,4 +170,9 @@ contract OpenArtMarketPlace is ReentrancyGuard {
   function getCollectItem(uint256 itemId, address sender) external view returns(IAuctionsOA.Collect memory) {
     return IAuctionsOA(_addressAuctions).getCollectItem(itemId, sender);
   }
+
+  /* Collect profit */
+  function collectProfit(uint256 itemId) external {
+    IAuctionsOA(_addressAuctions).getProfits(itemId, msg.sender);
+  }
 }
