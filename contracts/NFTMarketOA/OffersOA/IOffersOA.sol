@@ -3,12 +3,14 @@ pragma solidity ^0.8.4;
 
 interface IOffersOA {
   struct Offer {
+    uint256 offerId;
     uint256 itemId;
     uint256 amount;
     address bidder;
     address currency;
     uint256 endTime;
     bool accepted;
+    bool collected;
   }
 
   /* Allow users to make an offer */

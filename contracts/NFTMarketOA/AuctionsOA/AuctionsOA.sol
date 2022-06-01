@@ -100,7 +100,7 @@ contract AuctionsOA is ReentrancyGuard, ApprovalsGuard {
   /* Ends auction when time is done and sends the funds to the beneficiary */
   function getProfits(uint256 itemId, address collector) external onlyApprovals nonReentrant {
     require(block.timestamp > collects[itemId][collector].endTime, "The auction has not ended yet");
-    require(!collects[itemId][collector].collected, "The function auctionEnd has already been called");
+    require(!collects[itemId][collector].collected, "The function getProfit has already been called");
     require(collects[itemId][collector].amount > 0, "Item didn't had bids");
 
     IERC20 erc20 = IERC20(collects[itemId][collector].currency);
@@ -125,6 +125,7 @@ contract AuctionsOA is ReentrancyGuard, ApprovalsGuard {
   function collectNFT(uint256 itemId, address winner) external onlyApprovals {
     IStorageOA iStorage = IStorageOA(_addressStorage);
     IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
+    require(block.timestamp > item.endTime, "The auction has not ended yet");
     require(winner == item.highestBidder, "Only the winner can claim the nft.");
     iStorage.transferItem(itemId, winner);
   }

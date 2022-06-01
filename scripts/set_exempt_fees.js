@@ -9,11 +9,11 @@ const main = async () => {
     '0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E' // Deployed contract address
   )
 
-  await erc20OA.setExemptFeesIn("0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0", true)
-  await erc20OA.setExemptFeesOut("0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0", true)
+  await erc20OA.setExemptFeesIn("0xD0141E899a65C95a556fE2B27e5982A6DE7fDD7A", true)
+  await erc20OA.setExemptFeesOut("0xD0141E899a65C95a556fE2B27e5982A6DE7fDD7A", true)
 
-  await erc20OA.setExemptFeesIn("0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9", true)
-  await erc20OA.setExemptFeesOut("0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9", true)
+  await erc20OA.setExemptFeesIn("0xF32D39ff9f6Aa7a7A64d7a4F00a54826Ef791a55", true)
+  await erc20OA.setExemptFeesOut("0xF32D39ff9f6Aa7a7A64d7a4F00a54826Ef791a55", true)
 }
 
 main ()
