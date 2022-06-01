@@ -100,7 +100,7 @@ contract AuctionsOA is ReentrancyGuard, ApprovalsGuard {
   /* Ends auction when time is done and sends the funds to the beneficiary */
   function getProfits(uint256 itemId, address collector) external onlyApprovals nonReentrant {
     require(block.timestamp > collects[itemId][collector].endTime, "The auction has not ended yet");
-    require(!collects[itemId][collector].collected, "The function auctionEnd has already been called");
+    require(!collects[itemId][collector].collected, "The function getProfit has already been called");
     require(collects[itemId][collector].amount > 0, "Item didn't had bids");
 
     IERC20 erc20 = IERC20(collects[itemId][collector].currency);
