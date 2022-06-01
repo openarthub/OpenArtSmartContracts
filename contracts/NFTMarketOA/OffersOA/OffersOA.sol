@@ -16,12 +16,14 @@ contract OffersOA is ReentrancyGuard, ApprovalsGuard {
 
   /* Struct to save if user has money to collect */
   struct Offer {
+    uint256 offerId;
     uint256 itemId;
     uint256 amount;
     address bidder;
     address currency;
     uint256 endTime;
     bool accepted;
+    bool collected;
   }
 
   mapping(uint256 => Offer) private offers;
@@ -59,7 +61,7 @@ contract OffersOA is ReentrancyGuard, ApprovalsGuard {
     _offerIds.increment();
     uint256 offerId = _offerIds.current();
 
-    offers[offerId] = Offer(itemId, bidAmount, bidder, currency, endTime, false);
+    offers[offerId] = Offer(offerId, itemId, bidAmount, bidder, currency, endTime, false, false);
 
     emit MakeOffer(itemId, item.nftContract, item.tokenId, item.owner, bidder, bidAmount, item.endTime);
   }
@@ -73,8 +75,14 @@ contract OffersOA is ReentrancyGuard, ApprovalsGuard {
     require(!item.onAuction, "You can not accept offer because the item is currently on auction");
     require(block.timestamp < offers[offerId].endTime, "The offer has already expired");
     require(!offers[offerId].accepted, "The offer has already been accepted");
+    require(!offers[offerId].collected, "Item was already collected");
+
 
     IERC20 erc20 = IERC20(offers[offerId].currency);
+    if (item.stored == address(0)) {
+      IERC721(item.nftContract).transferFrom(item.owner, _addressStorage, item.tokenId);
+    }
+    
     require(
       erc20.transferFrom(offers[offerId].bidder, address(this), offers[offerId].amount),
       "Error at make transaction."
@@ -106,6 +114,7 @@ contract OffersOA is ReentrancyGuard, ApprovalsGuard {
     IStorageOA.StorageItem memory item = iStorage.getItem(offers[offerId].itemId);
     require(offers[offerId].accepted, "The offer has not been accepted");
     require(claimer == item.owner, "Only the winner can claim the nft.");
+    offers[offerId].collected = true;
     iStorage.transferItem(item.itemId, claimer);
   }
 
