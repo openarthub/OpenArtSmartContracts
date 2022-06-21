@@ -3,6 +3,12 @@ const hre = require("hardhat")
 require('dotenv').config()
 
 const adminAddress = process.env.ADMIN_ADDRESS
+const walletMinter = process.env.WALLET_MINTER
+const walletMarketing = process.env.WALLET_MARKETING
+const walletHelping = process.env.WALLET_HELPING
+const walletRewards = process.env.WALLET_REWARDS
+const walletDevelopment = process.env.WALLET_DEVELOPMENT
+const listingPricePercent = process.env.LISTING_PRICE_PERCENT
 
 const main = async () => {
   console.log('Running deployWithEthers script...')
@@ -20,7 +26,7 @@ const main = async () => {
   /* *** SalesOA *** */
   const SalesOA = await hre.ethers.getContractFactory('SalesOA')
   const salesOA = await SalesOA.deploy(
-    '2', // Listing price in percent (0 - 100)
+    listingPricePercent, // Listing price in percent (0 - 100)
     storageOAAddress, // Address of StorageOA contract
   )
 
@@ -31,7 +37,7 @@ const main = async () => {
   /* *** AuctionsOA *** */
   const AuctionsOA = await hre.ethers.getContractFactory('AuctionsOA')
   const auctionsOA = await AuctionsOA.deploy(
-    '2', // Listing price in percent (0 - 100)
+    listingPricePercent, // Listing price in percent (0 - 100)
     storageOAAddress, // Address of StorageOA contract
   )
 
@@ -42,7 +48,7 @@ const main = async () => {
   /* *** OffersOA *** */
   const OffersOA = await hre.ethers.getContractFactory('OffersOA')
   const offersOA = await OffersOA.deploy(
-    '2', // Listing price in percent (0 - 100)
+    listingPricePercent, // Listing price in percent (0 - 100)
     storageOAAddress, // Address of StorageOA contract
   )
 
@@ -77,13 +83,13 @@ const main = async () => {
   
   const ERC20OA = await hre.ethers.getContractFactory('ERC20OA')
   const erc20OA = await ERC20OA.deploy(
-    'HardHatToken', // Name token
-    'HHT', // Symbol token
+    'GanacheToken', // Name token
+    'GT', // Symbol token
     adminAddress, // Address Admin
-    '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', //Address Marketing
-    '0x70997970C51812dc3A010C7d01b50e0d17dc79C8', // Address Development
-    '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC', // Helping address,
-    '0x90F79bf6EB2c4f870365E785982E1f101E93b906', // Rewards Address
+    walletMarketing, //Address Marketing
+    walletDevelopment, // Address Development
+    walletHelping, // Helping address,
+    walletRewards, // Rewards Address
   )
 
   await erc20OA.deployed()
@@ -95,8 +101,9 @@ const main = async () => {
     /* *** MinterOA *** */
     const MinterOA = await hre.ethers.getContractFactory('Minter')
     const minterOA = await MinterOA.deploy(
-      "0xdD2FD4581271e230360230F9337D5c0430Bf44C0", // Listing price in percent (0 - 100)
+      walletMinter, // Listing price in percent (0 - 100)
       storageOAAddress, // Address of StorageOA contract
+      adminAddress, // Addres that is gonna recive earns
     )
   
     await minterOA.deployed()
@@ -105,8 +112,6 @@ const main = async () => {
   
     console.log('Deployment successful.')
   
-  
-    await minterOA.setApproval('0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', true)
 
   console.log('Deployment successful.')
 

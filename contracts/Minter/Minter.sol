@@ -11,10 +11,17 @@ import "../NFTMarketOA/StorageOA/IStorageOATrusted.sol";
 contract Minter is ApprovalsGuard {
   address private _minterWallet;
   address private _storage;
+  address private _adminWallet;
 
-  constructor(address minterWallet, address storageAddress) {
+  constructor(
+    address minterWallet,
+    address storageAddress,
+    address adminWallet
+  ) {
     _minterWallet = minterWallet;
     _storage = storageAddress;
+    _adminWallet = adminWallet;
+    setApproval(minterWallet, true);
   }
 
   function mint(
@@ -33,8 +40,17 @@ contract Minter is ApprovalsGuard {
     IERC721OA erc721 = IERC721OA(contractAddress);
     uint256 tokenId = erc721.createToken(urlAsset);
     IStorageOA(_storage).trustedCreateItem(
-      contractAddress, tokenId, isActive, _minterWallet, onSale, onAuction,
-      endTime, currency, price, highestBidder, highestBid
+      contractAddress,
+      tokenId,
+      isActive,
+      _adminWallet,
+      onSale,
+      onAuction,
+      endTime,
+      currency,
+      price,
+      highestBidder,
+      highestBid
     );
     erc721.transferFrom(address(this), _storage, tokenId);
   }

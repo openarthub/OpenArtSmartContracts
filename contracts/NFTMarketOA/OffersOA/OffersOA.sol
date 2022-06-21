@@ -77,12 +77,11 @@ contract OffersOA is ReentrancyGuard, ApprovalsGuard {
     require(!offers[offerId].accepted, "The offer has already been accepted");
     require(!offers[offerId].collected, "Item was already collected");
 
-
     IERC20 erc20 = IERC20(offers[offerId].currency);
     if (item.stored == address(0)) {
       IERC721(item.nftContract).transferFrom(item.owner, _addressStorage, item.tokenId);
     }
-    
+
     require(
       erc20.transferFrom(offers[offerId].bidder, address(this), offers[offerId].amount),
       "Error at make transaction."

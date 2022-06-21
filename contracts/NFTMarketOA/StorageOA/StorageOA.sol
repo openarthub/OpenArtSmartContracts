@@ -226,8 +226,21 @@ contract StorageOA is ApprovalsGuard {
 
     _createItem(
       StorageItem(
-        0, nftContract, tokenId, payable(ownerItem), price, onAuction, onSale, endTime, address(0), 0, currency, isActive, address(0)
-    ));
+        0,
+        nftContract,
+        tokenId,
+        payable(ownerItem),
+        price,
+        onAuction,
+        onSale,
+        endTime,
+        address(0),
+        0,
+        currency,
+        isActive,
+        address(0)
+      )
+    );
   }
 
   function trustedCreateItem(
@@ -248,20 +261,39 @@ contract StorageOA is ApprovalsGuard {
     require(((price > 0 && (onAuction || onSale)) || (!onAuction && !onSale)), "Price must be greater than 0");
     _createItem(
       StorageItem(
-        0, nftContract, tokenId, payable(ownerItem), price, onAuction, onSale, endTime, highestBidder, highestBid, currency, isActive, address(this)
-    ));
+        0,
+        nftContract,
+        tokenId,
+        payable(ownerItem),
+        price,
+        onAuction,
+        onSale,
+        endTime,
+        highestBidder,
+        highestBid,
+        currency,
+        isActive,
+        address(this)
+      )
+    );
   }
 
-    function _createItem(StorageItem memory item) private {
-
+  function _createItem(StorageItem memory item) private {
     _itemIds.increment();
     uint256 itemId = _itemIds.current();
     storedItems[itemId] = StorageItem(
-      itemId, item.nftContract, item.tokenId,
-      payable(item.owner), item.price,
-      item.onAuction, item.onSale, item.endTime,
-      item.highestBidder, item.highestBid,
-      item.currency, item.isActive,
+      itemId,
+      item.nftContract,
+      item.tokenId,
+      payable(item.owner),
+      item.price,
+      item.onAuction,
+      item.onSale,
+      item.endTime,
+      item.highestBidder,
+      item.highestBid,
+      item.currency,
+      item.isActive,
       item.stored
     );
 

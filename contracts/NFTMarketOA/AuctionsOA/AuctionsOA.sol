@@ -136,7 +136,7 @@ contract AuctionsOA is ReentrancyGuard, ApprovalsGuard {
   }
 
   /* Get collects of user */
-  function getCollectItem(uint256 itemId, address sender) external view onlyApprovals returns(Collect memory) {
+  function getCollectItem(uint256 itemId, address sender) external view onlyApprovals returns (Collect memory) {
     return collects[itemId][sender];
   }
 }

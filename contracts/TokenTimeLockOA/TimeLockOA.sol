@@ -18,7 +18,11 @@ contract PreSale is ReentrancyGuard {
   mapping(address => Beneficary) private owners;
   mapping(uint256 => uint256) public unlocksTime;
 
-  constructor(address _tokenAddress, uint256 _startTime, uint256 _endTime) {
+  constructor(
+    address _tokenAddress,
+    uint256 _startTime,
+    uint256 _endTime
+  ) {
     erc20 = IERC20(_tokenAddress);
     startTime = _startTime;
     endTime = _endTime;
@@ -107,7 +111,7 @@ contract PreSale is ReentrancyGuard {
     payable(owner).transfer(balance);
   }
 
-  function getUnlocksTime() public view returns (uint256 [] memory) {
+  function getUnlocksTime() public view returns (uint256[] memory) {
     uint256[] memory unlocks = new uint256[](24);
     for (uint16 i = 1; i < 25; i++) {
       unlocks[i - 1] = unlocksTime[i];

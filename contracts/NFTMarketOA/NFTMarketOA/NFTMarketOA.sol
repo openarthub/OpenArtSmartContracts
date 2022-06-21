@@ -14,8 +14,8 @@ contract NFTMarketOA is ReentrancyGuard {
   Counters.Counter private _itemIds;
   Counters.Counter private _itemsSold;
 
-  address payable owner;
-  uint256 listingPrice;
+  address payable private owner;
+  uint256 public listingPrice;
 
   constructor(uint256 _listingPrice, address address_backup) payable {
     owner = payable(msg.sender);

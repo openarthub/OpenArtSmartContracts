@@ -3,10 +3,11 @@
   "plugins": ["prettier"],
   "rules": {
     "prettier/prettier": "error",
-    "compiler-version": ["error","^0.8.4"],
+    "compiler-version": ["error", "^0.8.4"],
     "indent": ["error", 2],
-    "reason-string": ["warn",{"maxLength":68}],
+    "reason-string": ["warn", {"maxLength": 68}],
     "not-rely-on-time": "off",
-    "mark-callable-contracts": "off"
+    "mark-callable-contracts": "off",
+    "func-visibility": ["warn", {"ignoreConstructors": true}]
   }
 }
