@@ -4,7 +4,8 @@
 require("@nomiclabs/hardhat-solhint");
 require('@nomiclabs/hardhat-ethers');
 require('solidity-coverage');
-require('dotenv').config()
+require('dotenv').config({ path: `./.env${process.env.ENV ? '.' + process.env.ENV : ''}`})
+console.log(`./.env${process.env.ENV ? '.' + process.env.ENV : ''}`)
 
 module.exports = {
   solidity: "0.8.4",
