@@ -11,6 +11,9 @@ contract StorageOA is ApprovalsGuard {
   using Counters for Counters.Counter;
   Counters.Counter private _itemIds;
 
+  // Address allowed to create items without owner verification
+  address private _trustedAddress;
+
   // Structur of items stored
   struct StorageItem {
     uint256 itemId;
@@ -211,29 +214,63 @@ contract StorageOA is ApprovalsGuard {
     address nftContract,
     uint256 tokenId,
     bool isActive,
-    address ownerItem
+    address ownerItem,
+    bool onSale,
+    bool onAuction,
+    uint256 endTime,
+    address currency,
+    uint256 price
   ) external onlyApprovals {
     require(IERC721(nftContract).ownerOf(tokenId) == ownerItem, "You are not owner of this nft.");
+    require(((price > 0 && (onAuction || onSale)) || (!onAuction && !onSale)), "Price must be greater than 0");
+
+    _createItem(
+      StorageItem(
+        0, nftContract, tokenId, payable(ownerItem), price, onAuction, onSale, endTime, address(0), 0, currency, isActive, address(0)
+    ));
+  }
+
+  function trustedCreateItem(
+    address nftContract,
+    uint256 tokenId,
+    bool isActive,
+    address ownerItem,
+    bool onSale,
+    bool onAuction,
+    uint256 endTime,
+    address currency,
+    uint256 price,
+    address highestBidder,
+    uint256 highestBid
+  ) external {
+    console.log("Im inside of storage");
+    require(msg.sender == _trustedAddress, "You can't execute this function");
+    require(((price > 0 && (onAuction || onSale)) || (!onAuction && !onSale)), "Price must be greater than 0");
+    _createItem(
+      StorageItem(
+        0, nftContract, tokenId, payable(ownerItem), price, onAuction, onSale, endTime, highestBidder, highestBid, currency, isActive, address(this)
+    ));
+  }
+
+    function _createItem(StorageItem memory item) private {
 
     _itemIds.increment();
     uint256 itemId = _itemIds.current();
     storedItems[itemId] = StorageItem(
-      itemId,
-      nftContract,
-      tokenId,
-      payable(ownerItem),
-      0,
-      false,
-      false,
-      0,
-      address(0),
-      0,
-      address(0),
-      isActive,
-      address(0)
+      itemId, item.nftContract, item.tokenId,
+      payable(item.owner), item.price,
+      item.onAuction, item.onSale, item.endTime,
+      item.highestBidder, item.highestBid,
+      item.currency, item.isActive,
+      item.stored
     );
 
-    emit ItemCreated(itemId, nftContract, tokenId, ownerItem);
+    emit ItemCreated(itemId, item.nftContract, item.tokenId, item.owner);
+  }
+
+  function setTrustedAddress(address trustedAddress) external {
+    require(msg.sender == owner, "You're not allowed to execute this function");
+    _trustedAddress = trustedAddress;
   }
 
   function setActiveItem(uint256 itemId, bool isActive) external {

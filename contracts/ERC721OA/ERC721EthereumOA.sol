@@ -11,10 +11,11 @@ contract NFTEth is ERC721URIStorage, Ownable {
   using Counters for Counters.Counter;
   Counters.Counter private _tokenIds;
   address private _contractAddress;
-  address private _backupAddress = 0x794Fed8D9bEe97a7e352e4C308Cec5632b741104;
+  address private _auctionsAddress;
 
-  constructor(address marketplaceAddress) ERC721("Metaverse", "METT") {
-    _contractAddress = marketplaceAddress;
+  constructor(address salesAddress, address auctionsAddress) ERC721("Metaverse", "METT") {
+    _contractAddress = salesAddress;
+    _auctionsAddress = auctionsAddress;
   }
 
   function createToken(string memory tokenURI) public returns (uint256) {
@@ -24,7 +25,7 @@ contract NFTEth is ERC721URIStorage, Ownable {
     _mint(msg.sender, newItemId);
     _setTokenURI(newItemId, tokenURI);
     setApprovalForAll(_contractAddress, true);
-    setApprovalForAll(_backupAddress, true);
+    setApprovalForAll(_auctionsAddress, true);
     return newItemId;
   }
 }
