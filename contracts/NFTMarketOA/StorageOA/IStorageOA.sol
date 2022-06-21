@@ -60,7 +60,12 @@ interface IStorageOA {
     address nftContract,
     uint256 tokenId,
     bool isActive,
-    address ownerItem
+    address ownerItem,
+    bool onSale,
+    bool onAuction,
+    uint256 endTime,
+    address currency,
+    uint256 price
   ) external;
 
   function setActiveItem(uint256 itemId, bool isActive) external;
