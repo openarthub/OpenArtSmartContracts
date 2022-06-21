@@ -18,3 +18,4 @@ main ('Minter', '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853', '0xf39Fd6e51aad88F
     console.log(error)
     process.exit(1)
   })
+  

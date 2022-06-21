@@ -7,6 +7,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../StorageOA/IStorageOA.sol";
 import "../../utils/ApprovalsGuard.sol";
 
+import "hardhat/console.sol";
+
 contract SalesOA is ReentrancyGuard, ApprovalsGuard {
   address private _addressStorage;
   uint256 private _listingPrice;
@@ -39,8 +41,11 @@ contract SalesOA is ReentrancyGuard, ApprovalsGuard {
 
   /* Transfers ownership of the item, as well as funds between parties */
   function createMarketSale(uint256 itemId, address buyer) external payable onlyApprovals nonReentrant {
+    console.log("im inside");
     IStorageOA iStorage = IStorageOA(_addressStorage);
     IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
+    console.log("I got item from storage");
+    console.log(item.owner);
     require(item.onSale, "This Item is not on sale.");
     require(item.owner != buyer, "You are the owner of this nft");
     require(item.currency != address(0) || msg.value == item.price, "The value sent must be equals to nft's price");
@@ -56,11 +61,14 @@ contract SalesOA is ReentrancyGuard, ApprovalsGuard {
         "Transaction failed at pay item"
       );
     } else {
+      console.log("Im gonna make payments");
       payable(item.owner).transfer((price - ((price * _listingPrice) / 100)));
+      console.log("Im gonna make the second payment");
       payable(owner).transfer(((price * _listingPrice) / 100));
     }
-
+    console.log("im gonna transfer item");
     iStorage.transferItem(itemId, buyer);
+    console.log("item was transfered");
     emit SaleItem(itemId, item.nftContract, item.tokenId, buyer, item.price);
   }
 

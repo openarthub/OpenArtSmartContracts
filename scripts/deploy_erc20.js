@@ -7,13 +7,13 @@ const main = async () => {
   console.log('Running deployWithEthers script...')
   const ERC20OA = await hre.ethers.getContractFactory('ERC20OA')
   const erc20OA = await ERC20OA.deploy(
-    'hardhatToken', // Name token
-    'hht', // Symbol token
+    'ganacheToken', // Name token
+    'gnc', // Symbol token
     adminAddress, // Address Admin
-    '0x70997970C51812dc3A010C7d01b50e0d17dc79C8', //Address Marketing
-    '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC', // Address Development
-    '0x90F79bf6EB2c4f870365E785982E1f101E93b906', // Helping address,
-    '0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65', // Rewards Address
+    '0x4e34EeC85C800Fc61829b1b50Edb0a45f57BB632', //Address Marketing
+    '0x33f99cC965Ea46A44eAc7d4fDAff91429Ee4E43a', // Address Development
+    '0x31c6683a2f80B17c9576a39554505CBdCb80501e', // Helping address,
+    '0x1EF008Fe5bDEE78b1C2Aafaf60631f40e84B3374', // Rewards Address
   )
 
   await erc20OA.deployed()
