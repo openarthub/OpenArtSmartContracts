@@ -62,9 +62,14 @@ contract OpenArtMarketPlace is ReentrancyGuard {
   function createMarketItem(
     address nftContract,
     uint256 tokenId,
-    bool isActive
+    bool isActive,
+    bool onSale,
+    bool onAuction,
+    uint256 endTime,
+    address currency,
+    uint256 price
   ) external {
-    IStorageOA(_addressStorage).createItem(nftContract, tokenId, isActive, msg.sender);
+    IStorageOA(_addressStorage).createItem(nftContract, tokenId, isActive, msg.sender, onSale, onAuction, endTime, currency, price);
   }
 
   /* Creates the sale of a marketplace item */
@@ -175,4 +180,7 @@ contract OpenArtMarketPlace is ReentrancyGuard {
   function collectProfit(uint256 itemId) external {
     IAuctionsOA(_addressAuctions).getProfits(itemId, msg.sender);
   }
+
+  /* Events from external contracts */
+  event ItemCreated(uint256 indexed itemId, address indexed nftContract, uint256 indexed tokenId, address owner);
 }
