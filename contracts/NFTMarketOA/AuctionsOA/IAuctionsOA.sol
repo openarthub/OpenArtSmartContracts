@@ -2,7 +2,6 @@
 pragma solidity ^0.8.4;
 
 interface IAuctionsOA {
-
   struct Collect {
     bool collected;
     uint256 amount;
@@ -31,6 +30,6 @@ interface IAuctionsOA {
   /* Allows user to transfer the earned NFT */
   function collectNFT(uint256 itemId, address winner) external;
 
-   /* Get collects of user */
-  function getCollectItem(uint256 itemId, address sender) external view returns(Collect memory);
+  /* Get collects of user */
+  function getCollectItem(uint256 itemId, address sender) external view returns (Collect memory);
 }

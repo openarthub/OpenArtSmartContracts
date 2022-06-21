@@ -54,7 +54,11 @@ interface IOpenArtMarketPlace {
   function getItem(uint256 itemId) external view returns (IStorageOA.StorageItem memory);
 
   /* Put on sale */
-  function activateSale(uint256 itemId, uint256 price, address currency) external;
+  function activateSale(
+    uint256 itemId,
+    uint256 price,
+    address currency
+  ) external;
 
   /* Remove from sale */
   function deactivateSale(uint256 itemId) external;
@@ -82,7 +86,7 @@ interface IOpenArtMarketPlace {
     uint256 bidAmount,
     uint256 endTime,
     address currency
-  ) external ;
+  ) external;
 
   /* Allow item's owner to accept offer and recive his profit */
   function acceptOffer(uint256 offerId) external;
@@ -96,8 +100,8 @@ interface IOpenArtMarketPlace {
   /* Return item's offers currently active */
   function getActiveOffersByItem(uint256 itemId) external view returns (IOffersOA.Offer[] memory);
 
-   /* Get collects of user */
-  function getCollectItem(uint256 itemId, address sender) external view returns(IAuctionsOA.Collect memory);
+  /* Get collects of user */
+  function getCollectItem(uint256 itemId, address sender) external view returns (IAuctionsOA.Collect memory);
 
   /* Collect profit */
   function collectProfit(uint256 itemId) external;

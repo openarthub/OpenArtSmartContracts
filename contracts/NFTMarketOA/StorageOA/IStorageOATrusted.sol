@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 interface IStorageOA {
-    function trustedCreateItem(
+  function trustedCreateItem(
     address nftContract,
     uint256 tokenId,
     bool isActive,
