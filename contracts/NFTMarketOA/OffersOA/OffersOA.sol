@@ -7,8 +7,9 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../StorageOA/IStorageOA.sol";
 import "../../utils/ApprovalsGuard.sol";
+import "../Events/IEvents.sol";
 
-contract OffersOA is ReentrancyGuard, ApprovalsGuard {
+contract OffersOA is ReentrancyGuard, ApprovalsGuard, IEvents {
   using Counters for Counters.Counter;
   Counters.Counter private _offerIds;
   address private _addressStorage;
@@ -33,16 +34,6 @@ contract OffersOA is ReentrancyGuard, ApprovalsGuard {
     _addressStorage = addressStorage;
   }
 
-  event MakeOffer(
-    uint256 indexed itemId,
-    address indexed nftContract,
-    uint256 indexed tokenId,
-    address owner,
-    address bidder,
-    uint256 amount,
-    uint256 endTime
-  );
-
   /* Allow users to make an offer */
   function makeOffer(
     uint256 itemId,
@@ -63,7 +54,7 @@ contract OffersOA is ReentrancyGuard, ApprovalsGuard {
 
     offers[offerId] = Offer(offerId, itemId, bidAmount, bidder, currency, endTime, false, false);
 
-    emit MakeOffer(itemId, item.nftContract, item.tokenId, item.owner, bidder, bidAmount, item.endTime);
+    emit MakeOffer(bidder, item.owner, itemId, item.nftContract, item.tokenId, bidAmount, endTime, block.timestamp);
   }
 
   /* Allow item's owner to accept offer and recive his profit */
@@ -73,9 +64,10 @@ contract OffersOA is ReentrancyGuard, ApprovalsGuard {
 
     require(item.owner == approval, "You are not the owner of this item");
     require(!item.onAuction, "You can not accept offer because the item is currently on auction");
-    require(block.timestamp < offers[offerId].endTime, "The offer has already expired");
-    require(!offers[offerId].accepted, "The offer has already been accepted");
-    require(!offers[offerId].collected, "Item was already collected");
+    Offer memory offer = offers[offerId];
+    require(block.timestamp < offer.endTime, "The offer has already expired");
+    require(!offer.accepted, "The offer has already been accepted");
+    require(!offer.collected, "Item was already collected");
 
     IERC20 erc20 = IERC20(offers[offerId].currency);
     if (item.stored == address(0)) {
@@ -83,18 +75,18 @@ contract OffersOA is ReentrancyGuard, ApprovalsGuard {
     }
 
     require(
-      erc20.transferFrom(offers[offerId].bidder, address(this), offers[offerId].amount),
+      erc20.transferFrom(offer.bidder, address(this), offer.amount),
       "Error at make transaction."
     );
     require(
-      erc20.transfer(item.owner, (offers[offerId].amount - ((offers[offerId].amount * _listingPrice) / 100))),
+      erc20.transfer(item.owner, (offer.amount - ((offer.amount * _listingPrice) / 100))),
       "Transfer to owner failed"
     );
-    require(erc20.transfer(owner, ((offers[offerId].amount * _listingPrice) / 100)), "Transfer failed");
+    require(erc20.transfer(owner, ((offer.amount * _listingPrice) / 100)), "Transfer failed");
     offers[offerId].accepted = true;
     iStorage.setItem(
       item.itemId,
-      payable(offers[offerId].bidder),
+      payable(offer.bidder),
       item.price,
       item.onAuction,
       item.onSale,
@@ -105,6 +97,8 @@ contract OffersOA is ReentrancyGuard, ApprovalsGuard {
       item.isActive,
       item.stored
     );
+
+    emit SaleItem(offer.bidder, item.owner, item.itemId, item.nftContract, item.tokenId, offer.amount, block.timestamp);
   }
 
   /* Allows user to claim items */

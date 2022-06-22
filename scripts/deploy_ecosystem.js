@@ -135,6 +135,25 @@ const main = async () => {
 
   await erc20OA.setExemptFeesIn(auctionsOAAddress, true)
   await erc20OA.setExemptFeesOut(auctionsOAAddress, true)
+
+  console.log(`REACT_APP_NFT_MARKET_ADDRESS=${openArtMarketPlaceAddress}`)
+  console.log(`REACT_APP_AUCTIONS_ADDRESS=${auctionsOAAddress}`)
+  console.log(`REACT_APP_SALES_ADDRESS=${salesOAAddress}`)
+  console.log(`REACT_APP_STORAGE_ADDRESS=${storageOAAddress}`)
+  console.log(`REACT_APP_OFFERS_ADDRESS=${offersOAAddress}`)
+  console.log(`REACT_APP_NFT_ADDRESS=${erc721OAAddress}`)
+  console.log(`REACT_APP_ERC20_ADDRESS=${erc20OAAddress}`)
+  console.log('\n \n \n')
+  console.log(`ADDRESS_MINTER_CONTRACT=${minterOAAddress}`)
+  console.log('\n \n \n')
+  console.log(`CURRENT_OFFERS_ADDRESS=${offersOAAddress}`)
+  console.log(`CURRENT_AUCTIONS_ADDRESS=${auctionsOAAddress}`)
+  console.log(`CURRENT_SALES_ADDRESS=${salesOAAddress}`)
+  console.log(`CURRENT_STORAGE_ADDRESS=${storageOAAddress}`)
+  console.log(`CURRENT_MAIN_ADDRESS=${openArtMarketPlaceAddress}`)
+  console.log(`CURRENT_MINTER_ADDRESS=${minterOAAddress}`)
+  console.log(`CURRENT_ERC20_ADDRESS=${erc20OAAddress}`)
+
 }
 
 main ()
