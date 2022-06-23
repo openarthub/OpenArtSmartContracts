@@ -15,5 +15,9 @@ module.exports = {
       url: process.env.URL_RPC,
       accounts: [process.env.WALLET_PRIVATE_KEY]
     },
+    ganache: {
+      url: process.env.URL_RPC,
+      accounts: [process.env.WALLET_PRIVATE_KEY]
+    },
   }
 };

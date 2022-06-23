@@ -6,8 +6,9 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "../StorageOA/IStorageOA.sol";
 import "../../utils/ApprovalsGuard.sol";
+import "../Events/IEvents.sol";
 
-contract AuctionsOA is ReentrancyGuard, ApprovalsGuard {
+contract AuctionsOA is ReentrancyGuard, ApprovalsGuard, IEvents {
   address private _addressStorage;
   uint256 private _listingPrice;
 
@@ -26,24 +27,6 @@ contract AuctionsOA is ReentrancyGuard, ApprovalsGuard {
     _addressStorage = addressStorage;
   }
 
-  event MakeOffer(
-    uint256 indexed itemId,
-    address indexed nftContract,
-    uint256 indexed tokenId,
-    address owner,
-    address bidder,
-    uint256 amount,
-    uint256 endTime
-  );
-
-  event ListItem(
-    uint256 indexed itemId,
-    address indexed nftContract,
-    uint256 indexed tokenId,
-    address owner,
-    uint256 price
-  );
-
   /* Activate Auction */
   function activateAuction(
     uint256 itemId,
@@ -61,7 +44,7 @@ contract AuctionsOA is ReentrancyGuard, ApprovalsGuard {
     IERC721(item.nftContract).transferFrom(item.owner, _addressStorage, item.tokenId);
     iStorage.setItem(itemId, payable(seller), minBid, true, false, endTime, seller, 0, currency, true, _addressStorage);
     collects[itemId][seller] = Collect(false, 0, currency, endTime);
-    emit ListItem(itemId, item.nftContract, item.tokenId, seller, minBid);
+    emit ListItem(seller, address(0), itemId, item.nftContract, item.tokenId, minBid, block.timestamp);
   }
 
   /* Allow users to bid */
@@ -94,7 +77,7 @@ contract AuctionsOA is ReentrancyGuard, ApprovalsGuard {
 
     collects[itemId][item.owner].amount = bidAmount;
 
-    emit MakeOffer(itemId, item.nftContract, item.tokenId, item.owner, bidder, bidAmount, item.endTime);
+    emit MakeOffer(bidder, item.owner, itemId, item.nftContract, item.tokenId, bidAmount, item.endTime, block.timestamp);
   }
 
   /* Ends auction when time is done and sends the funds to the beneficiary */
@@ -119,6 +102,7 @@ contract AuctionsOA is ReentrancyGuard, ApprovalsGuard {
     }
 
     collects[itemId][collector].collected = true;
+    
   }
 
   /* Allows user to transfer the earned NFT */
@@ -128,6 +112,7 @@ contract AuctionsOA is ReentrancyGuard, ApprovalsGuard {
     require(block.timestamp > item.endTime, "The auction has not ended yet");
     require(winner == item.highestBidder, "Only the winner can claim the nft.");
     iStorage.transferItem(itemId, winner);
+    emit SaleItem(item.owner, winner, itemId, item.nftContract, item.tokenId, item.highestBid, block.timestamp);
   }
 
   /* Set storage address */
