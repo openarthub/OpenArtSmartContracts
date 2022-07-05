@@ -79,7 +79,6 @@ contract VirtualWalletOA is ApprovalsGuard {
    * @param walletAddress address to get balances
    * @return Balances return a struct that contais user's OARTs and eth balances.
   */
-
   function getBalances(address walletAddress) external view returns (Balances memory) {
     return Balances(_balancesOART[walletAddress], _balances[walletAddress]);
   }
