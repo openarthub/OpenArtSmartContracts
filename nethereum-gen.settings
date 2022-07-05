@@ -1,0 +1,7 @@
+{
+    "projectName": "OpenArtSmartContracts",
+    "namespace": "OpenArtSmartContracts.Contracts",
+    "lang": 0,
+    "autoCodeGen": true,
+    "projectPath": "./contracts"
+}
