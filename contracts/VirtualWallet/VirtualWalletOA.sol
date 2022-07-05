@@ -11,6 +11,11 @@ contract VirtualWalletOA is ApprovalsGuard {
   mapping (address => uint256) private _balances;
   address private _tokenAddress;
 
+  struct Balances {
+    uint256 oartBalance;
+    uint256 ethBalance;
+  }
+
   /**
     * @dev Initializa de contract by setting the erc20 token address and an approval
     * @param tokenAddress Initial erc20 token address
@@ -49,6 +54,34 @@ contract VirtualWalletOA is ApprovalsGuard {
       _balances[from] - amount;
     }
     payable(to).transfer(amount);
+  }
+
+  /**
+    * @dev Take tokens from user's wallet to fund user's virtual wallet
+    * @param amount Amount of tokens to fund
+  */
+  function fundOART (uint256 amount) external {
+    require(IERC20(_tokenAddress).transferFrom(msg.sender, address(this), amount), "Error at get tokens");
+    unchecked {
+      _balancesOART[msg.sender] += amount;
+    }
+  }
+
+  /**
+    * @dev Get eth from user to fund user's virtual wallet
+  */
+  function fundAccount () external payable {
+    _balances[msg.sender] += msg.value;
+  }
+
+  /**
+   * @dev Get user's virtual balances
+   * @param walletAddress address to get balances
+   * @return Balances return a struct that contais user's OARTs and eth balances.
+  */
+
+  function getBalances(address walletAddress) external view returns (Balances memory) {
+    return Balances(_balancesOART[walletAddress], _balances[walletAddress]);
   }
 
   /**
