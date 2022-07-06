@@ -36,7 +36,7 @@ contract VirtualWalletOA is ApprovalsGuard {
   function transferOART(address from, address to, uint256 amount) external onlyApprovals {
     require(_balancesOART[from] >= amount, "Transfer amount exceeds balance.");
     unchecked {
-      _balancesOART[from] - amount;
+      _balancesOART[from] -= amount;
     }
     require(IERC20(_tokenAddress).transfer(to, amount), "Error at transaction");
   }
@@ -51,7 +51,7 @@ contract VirtualWalletOA is ApprovalsGuard {
   function transfer(address from, address to, uint256 amount) external onlyApprovals {
     require(_balances[from] >= amount, "Transfer amount exceeds balance.");
     unchecked {
-      _balances[from] - amount;
+      _balances[from] -= amount;
     }
     payable(to).transfer(amount);
   }
@@ -81,6 +81,30 @@ contract VirtualWalletOA is ApprovalsGuard {
   */
   function getBalances(address walletAddress) external view returns (Balances memory) {
     return Balances(_balancesOART[walletAddress], _balances[walletAddress]);
+  }
+
+  /**
+    * @dev Withdraw oarts funds in virtual wallet
+    * @param amount the amount to withdraw
+  */
+  function withdrawOART(uint256 amount) external {
+    require(_balancesOART[msg.sender] >= amount, "Not enough balance");
+    unchecked {
+      _balancesOART[msg.sender] -= amount;
+    }
+    require(IERC20(_tokenAddress).transfer(msg.sender, amount), "Error at send tokens");
+  }
+
+  /**
+    * @dev Withdraw funds in virtual wallet
+    * @param amount the amount to withdraw
+  */
+  function withdraw(uint256 amount) external {
+    require(_balances[msg.sender] >= amount, "Not enough balance");
+    unchecked {
+      _balances[msg.sender] -= amount;
+    }
+    payable(msg.sender).transfer(amount);
   }
 
   /**
