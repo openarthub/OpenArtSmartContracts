@@ -103,6 +103,11 @@ celerybeat.pid
 
 # Environments
 .env
+.env.testnet
+.env.staging
+.env.local
+.env.testing
+.env.production
 .venv
 env/
 venv/
@@ -131,3 +136,11 @@ dmypy.json
 # Remix
 .deps/
 artifacts/
+
+node_modules
+package-lock.json
+cache
+coverage
+coverage.json
+
+.vscode/

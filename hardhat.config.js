@@ -1,0 +1,23 @@
+/**
+ * @type import('hardhat/config').HardhatUserConfig
+ */
+require("@nomiclabs/hardhat-solhint");
+require('@nomiclabs/hardhat-ethers');
+require('solidity-coverage');
+require('dotenv').config({ path: `./.env${process.env.ENV ? '.' + process.env.ENV : ''}`})
+console.log(`./.env${process.env.ENV ? '.' + process.env.ENV : ''}`)
+
+module.exports = {
+  solidity: "0.8.4",
+
+  networks: {
+    testnet: {
+      url: process.env.URL_RPC,
+      accounts: [process.env.WALLET_PRIVATE_KEY]
+    },
+    ganache: {
+      url: process.env.URL_RPC,
+      accounts: [process.env.WALLET_PRIVATE_KEY]
+    },
+  }
+};
