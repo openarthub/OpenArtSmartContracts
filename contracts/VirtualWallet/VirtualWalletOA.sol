@@ -84,6 +84,30 @@ contract VirtualWalletOA is ApprovalsGuard {
   }
 
   /**
+    * @dev Withdraw oarts funds in virtual wallet
+    * @param amount the amount to withdraw
+  */
+  function withdrawOART(uint256 amount) external {
+    require(_balancesOART[msg.sender] >= amount, "Not enough balance");
+    unchecked {
+      _balancesOART[msg.sender] -= amount;
+    }
+    require(IERC20(_tokenAddress).transfer(msg.sender, amount), "Error at send tokens");
+  }
+
+  /**
+    * @dev Withdraw funds in virtual wallet
+    * @param amount the amount to withdraw
+  */
+  function withdraw(uint256 amount) external {
+    require(_balances[msg.sender] >= amount, "Not enough balance");
+    unchecked {
+      _balances[msg.sender] -= amount;
+    }
+    payable(msg.sender).transfer(amount);
+  }
+
+  /**
     * @dev Change erc20 token address
     * @param tokenAddress New token adress
   */
