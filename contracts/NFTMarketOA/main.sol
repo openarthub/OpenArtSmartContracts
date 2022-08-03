@@ -78,7 +78,8 @@ contract OpenArtMarketPlace is ReentrancyGuard {
       onAuction,
       endTime,
       currency,
-      price
+      price,
+      true
     );
   }
 
