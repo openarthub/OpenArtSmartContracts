@@ -3,11 +3,11 @@ const hre = require("hardhat")
 require('dotenv').config()
 
 const adminAddress = process.env.ADMIN_ADDRESS
-const walletMinter = process.env.WALLET_MINTER
-const walletMarketing = process.env.WALLET_MARKETING
-const walletHelping = process.env.WALLET_HELPING
-const walletRewards = process.env.WALLET_REWARDS
-const walletDevelopment = process.env.WALLET_DEVELOPMENT
+const walletMinter = process.env.ADDRESS_MINTER_WALLET
+const walletMarketing = process.env.ADDRESS_MARKETING_WALLET
+const walletHelping = process.env.ADDRESS_HELPING_WALLET
+const walletRewards = process.env.ADDRESS_REWARDS_WALLET
+const walletDevelopment = process.env.ADDRESS_DEVELOPMENT_WALLET
 const listingPricePercent = process.env.LISTING_PRICE_PERCENT
 
 const main = async () => {
@@ -82,6 +82,8 @@ const main = async () => {
 
   
   const ERC20OA = await hre.ethers.getContractFactory('ERC20OA')
+
+  console.log(adminAddress, walletDevelopment, walletHelping, walletMarketing, walletRewards)
   const erc20OA = await ERC20OA.deploy(
     'GanacheToken', // Name token
     'GT', // Symbol token
@@ -128,13 +130,19 @@ const main = async () => {
   console.log('Approvals set correctly')
 
   await erc20OA.setExemptFeesIn(offersOAAddress, true)
+  console.log('first set')
   await erc20OA.setExemptFeesOut(offersOAAddress, true)
+  console.log('second set')
 
   await erc20OA.setExemptFeesIn(salesOAAddress, true)
+  console.log('thirdth set')
   await erc20OA.setExemptFeesOut(salesOAAddress, true)
+  console.log('forth set')
 
   await erc20OA.setExemptFeesIn(auctionsOAAddress, true)
+  console.log('fiveth set')
   await erc20OA.setExemptFeesOut(auctionsOAAddress, true)
+  console.log('sixth set')
 
   console.log(`REACT_APP_NFT_MARKET_ADDRESS=${openArtMarketPlaceAddress}`)
   console.log(`REACT_APP_AUCTIONS_ADDRESS=${auctionsOAAddress}`)
