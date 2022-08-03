@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "../../ERC721OA/IERC721OA.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../StorageOA/IStorageOA.sol";
@@ -71,32 +71,34 @@ contract OffersOA is ReentrancyGuard, ApprovalsGuard, IEvents {
 
     IERC20 erc20 = IERC20(offers[offerId].currency);
     if (item.stored == address(0)) {
-      IERC721(item.nftContract).transferFrom(item.owner, _addressStorage, item.tokenId);
+      IERC721OA(item.nftContract).transferFrom(item.owner, _addressStorage, item.tokenId);
     }
 
+    address royaltiesReceiver;
+    uint256 royaltiesAmount;
+
+    {
+      try IERC721OA(item.nftContract).royaltyInfo(item.itemId, item.price) returns (
+        address receiver,
+        uint256 royaltyAmount
+      ) {
+        royaltiesReceiver = receiver;
+        royaltiesAmount = royaltyAmount;
+      } catch {}
+    }
+
+    require(erc20.transferFrom(offer.bidder, address(this), offer.amount), "Error at make transaction.");
+    if (royaltiesAmount > 0) {
+      require(erc20.transfer(royaltiesReceiver, royaltiesAmount), "Transaction failed");
+    }
     require(
-      erc20.transferFrom(offer.bidder, address(this), offer.amount),
-      "Error at make transaction."
-    );
-    require(
-      erc20.transfer(item.owner, (offer.amount - ((offer.amount * _listingPrice) / 100))),
+      erc20.transfer(item.owner, (offer.amount - ((offer.amount * _listingPrice) / 100) - royaltiesAmount)),
       "Transfer to owner failed"
     );
     require(erc20.transfer(owner, ((offer.amount * _listingPrice) / 100)), "Transfer failed");
     offers[offerId].accepted = true;
-    iStorage.setItem(
-      item.itemId,
-      payable(offer.bidder),
-      item.price,
-      item.onAuction,
-      item.onSale,
-      item.endTime,
-      item.highestBidder,
-      item.highestBid,
-      item.currency,
-      item.isActive,
-      item.stored
-    );
+    item.owner = payable(offer.bidder);
+    iStorage.setItem(item.itemId, item);
 
     emit SaleItem(offer.bidder, item.owner, item.itemId, item.nftContract, item.tokenId, offer.amount, block.timestamp);
   }

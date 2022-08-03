@@ -103,6 +103,7 @@ celerybeat.pid
 
 # Environments
 .env
+.env.qa
 .env.testnet
 .env.staging
 .env.local
