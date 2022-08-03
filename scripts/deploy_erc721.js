@@ -7,8 +7,8 @@ const main = async () => {
   /* *** ERC721OA *** */
   const ERC721OA = await hre.ethers.getContractFactory('NFTEth')
   const erc721OA = await ERC721OA.deploy(
-    '0x0e486ACF8B867AA79361E9346C4918cf7B5cd7CD', // Address of sales contract
-    '0xE8b0f5B2036FaaCe506f20bb9829F88aE60D2d22', // Address of auctions contract
+    '0x0584DA331A3e36e6B587846B3c4150839920Ec9e', // Address of sales contract
+    '0x639e34cF634d46f8438e9ebBC11dBBf70aC7ccBA', // Address of auctions contract
   )
 
   await erc721OA.deployed()
