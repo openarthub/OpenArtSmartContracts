@@ -100,7 +100,7 @@ contract OffersOA is ReentrancyGuard, ApprovalsGuard, IEvents {
     item.owner = payable(offer.bidder);
     iStorage.setItem(item.itemId, item);
 
-    emit SaleItem(offer.bidder, item.owner, item.itemId, item.nftContract, item.tokenId, offer.amount, block.timestamp);
+    emit SaleItem(item.owner, offer.bidder, item.itemId, item.nftContract, item.tokenId, offer.amount, block.timestamp);
   }
 
   /* Allows user to claim items */
