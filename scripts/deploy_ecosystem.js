@@ -16,7 +16,7 @@ const main = async () => {
   /* *** StorageOA *** */
   const StorageOA = await hre.ethers.getContractFactory('StorageOA')
   const storageOA = await StorageOA.deploy(
-    '0x0000000000000000000000000000000000000000', // Backup Address
+    '0xBfA7e689B6D989791f35B6AFc2e47cF541BDAA58', // Backup Address
   )
 
   await storageOA.deployed()

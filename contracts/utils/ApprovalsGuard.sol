@@ -21,6 +21,11 @@ abstract contract ApprovalsGuard {
     _;
   }
 
+  modifier onlyApprovalsOrOwner() {
+    require((msg.sender == owner || _approvals[msg.sender]), "You are not allowed to execute this method");
+    _;
+  }
+
   function setApproval(address approveAddress, bool approved) public onlyOwner {
     require(msg.sender == owner, "You are not allowed to execute this function");
     _approvals[approveAddress] = approved;
