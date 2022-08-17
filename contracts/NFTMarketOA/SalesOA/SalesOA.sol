@@ -36,7 +36,7 @@ contract SalesOA is ReentrancyGuard, ApprovalsGuard, IEvents {
     uint256 royaltiesAmount;
 
     if (item.firstSold) {
-      try IERC721OA(item.nftContract).royaltyInfo(item.itemId, item.price) returns (
+      try IERC721OA(item.nftContract).royaltyInfo(item.tokenId, item.price) returns (
         address receiver,
         uint256 royaltyAmount
       ) {
@@ -64,7 +64,7 @@ contract SalesOA is ReentrancyGuard, ApprovalsGuard, IEvents {
       payable(item.owner).transfer((price - ((price * _listingPrice) / 100) - royaltiesAmount));
       payable(owner).transfer(((price * _listingPrice) / 100));
     }
-    emit SaleItem(item.owner, buyer, itemId, item.nftContract, item.tokenId, price, block.timestamp);
+    emit SaleItem(item.owner, buyer, itemId, item.nftContract, item.tokenId, price, item.currency);
     iStorage.transferItem(itemId, buyer);
   }
 
@@ -82,10 +82,12 @@ contract SalesOA is ReentrancyGuard, ApprovalsGuard, IEvents {
   ) external onlyApprovals {
     IStorageOA iStorage = IStorageOA(_addressStorage);
     IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
-    require(seller == item.owner, "You are not owner of this nft");
+    IERC721 erc721 = IERC721(item.nftContract);
+    address itemOwner = erc721.ownerOf(item.tokenId);
+    require(seller == itemOwner, "You are not owner of this nft");
     require(!item.onSale, "This item is on sale already");
     require(!item.onAuction, "This item is currently on auction");
-    IERC721(item.nftContract).transferFrom(item.owner, _addressStorage, item.tokenId);
+    erc721.transferFrom(itemOwner, _addressStorage, item.tokenId);
     item.owner = payable(seller);
     item.price = price;
     item.onSale = true;
@@ -93,7 +95,7 @@ contract SalesOA is ReentrancyGuard, ApprovalsGuard, IEvents {
     item.currency = currency;
     item.stored = _addressStorage;
     iStorage.setItem(itemId, item);
-    emit ListItem(seller, address(0), itemId, item.nftContract, item.tokenId, price, block.timestamp);
+    emit ListItem(seller, address(0), itemId, item.nftContract, item.tokenId, price, currency);
   }
 
   /* Remove from sale */
@@ -102,7 +104,7 @@ contract SalesOA is ReentrancyGuard, ApprovalsGuard, IEvents {
     IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
     require(seller == item.owner, "You are not owner of this nft");
     iStorage.transferItem(itemId, seller);
-    emit Cancel(seller, address(0), itemId, item.nftContract, item.tokenId, block.timestamp);
+    emit Cancel(seller, address(0), itemId, item.nftContract, item.tokenId);
   }
 
   /* Set storage address */

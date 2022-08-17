@@ -45,8 +45,11 @@ contract OffersOA is ReentrancyGuard, ApprovalsGuard, IEvents {
     IStorageOA iStorage = IStorageOA(_addressStorage);
     IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
 
+    IERC721OA erc721 = IERC721OA(item.nftContract);
+    address itemOwner = erc721.ownerOf(item.tokenId);
+
     require(!item.onAuction, "This item is currently on auction");
-    require(item.owner != bidder, "You are the owner of this nft");
+    require(itemOwner != bidder, "You are the owner of this nft");
     require((bidAmount > 0), "Amount must be greater than 0");
 
     _offerIds.increment();
@@ -54,16 +57,17 @@ contract OffersOA is ReentrancyGuard, ApprovalsGuard, IEvents {
 
     offers[offerId] = Offer(offerId, itemId, bidAmount, bidder, currency, endTime, false, false);
 
-    emit MakeOffer(bidder, item.owner, itemId, item.nftContract, item.tokenId, bidAmount, endTime, block.timestamp);
+    emit MakeOffer(bidder, itemOwner, itemId, item.nftContract, item.tokenId, bidAmount, endTime, currency);
   }
 
   /* Allow item's owner to accept offer and recive his profit */
   function acceptOffer(uint256 offerId, address approval) external onlyApprovals nonReentrant {
     IStorageOA iStorage = IStorageOA(_addressStorage);
     IStorageOA.StorageItem memory item = iStorage.getItem(offers[offerId].itemId);
-
-    require(item.owner == approval, "You are not the owner of this item");
-    require(!item.onAuction, "You can not accept offer because the item is currently on auction");
+    IERC721OA erc721 = IERC721OA(item.nftContract);
+    address itemOwner = erc721.ownerOf(item.tokenId);
+    require(itemOwner == approval, "You are not the owner of this item");
+    require(!item.onAuction, "You cannot accept offer because the item is currently on auction");
     Offer memory offer = offers[offerId];
     require(block.timestamp < offer.endTime, "The offer has already expired");
     require(!offer.accepted, "The offer has already been accepted");
@@ -71,17 +75,14 @@ contract OffersOA is ReentrancyGuard, ApprovalsGuard, IEvents {
 
     IERC20 erc20 = IERC20(offers[offerId].currency);
     if (item.stored == address(0)) {
-      IERC721OA(item.nftContract).transferFrom(item.owner, _addressStorage, item.tokenId);
+      erc721.transferFrom(itemOwner, _addressStorage, item.tokenId);
     }
 
     address royaltiesReceiver;
     uint256 royaltiesAmount;
 
     {
-      try IERC721OA(item.nftContract).royaltyInfo(item.itemId, item.price) returns (
-        address receiver,
-        uint256 royaltyAmount
-      ) {
+      try erc721.royaltyInfo(item.tokenId, offer.amount) returns (address receiver, uint256 royaltyAmount) {
         royaltiesReceiver = receiver;
         royaltiesAmount = royaltyAmount;
       } catch {}
@@ -92,15 +93,16 @@ contract OffersOA is ReentrancyGuard, ApprovalsGuard, IEvents {
       require(erc20.transfer(royaltiesReceiver, royaltiesAmount), "Transaction failed");
     }
     require(
-      erc20.transfer(item.owner, (offer.amount - ((offer.amount * _listingPrice) / 100) - royaltiesAmount)),
+      erc20.transfer(itemOwner, (offer.amount - ((offer.amount * _listingPrice) / 100) - royaltiesAmount)),
       "Transfer to owner failed"
     );
     require(erc20.transfer(owner, ((offer.amount * _listingPrice) / 100)), "Transfer failed");
     offers[offerId].accepted = true;
+    address prevOwner = itemOwner;
     item.owner = payable(offer.bidder);
     iStorage.setItem(item.itemId, item);
 
-    emit SaleItem(item.owner, offer.bidder, item.itemId, item.nftContract, item.tokenId, offer.amount, block.timestamp);
+    emit SaleItem(prevOwner, offer.bidder, item.itemId, item.nftContract, item.tokenId, offer.amount, offer.currency);
   }
 
   /* Allows user to claim items */

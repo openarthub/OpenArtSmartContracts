@@ -10,7 +10,7 @@ interface IEvents {
     uint256 tokenId,
     uint256 amount,
     uint256 endTime,
-    uint256 date
+    address currency
   );
 
   event ListItem(
@@ -20,7 +20,7 @@ interface IEvents {
     address nftContract,
     uint256 tokenId,
     uint256 amount,
-    uint256 date
+    address currency
   );
 
   event SaleItem(
@@ -30,15 +30,8 @@ interface IEvents {
     address nftContract,
     uint256 tokenId,
     uint256 amount,
-    uint256 date
+    address currency
   );
 
-  event Cancel(
-    address indexed from,
-    address indexed to,
-    uint256 indexed itemId,
-    address nftContract,
-    uint256 tokenId,
-    uint256 date
-  );
+  event Cancel(address indexed from, address indexed to, uint256 indexed itemId, address nftContract, uint256 tokenId);
 }
