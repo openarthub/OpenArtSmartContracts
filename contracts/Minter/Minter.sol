@@ -27,6 +27,7 @@ contract Minter is ApprovalsGuard {
     bool onSale;
     bool onAuction;
     bool isActive;
+    address firstOwner;
     uint256 endTime;
     address currency;
     uint256 price;
@@ -49,7 +50,7 @@ contract Minter is ApprovalsGuard {
       mintData.contractAddress,
       tokenId,
       mintData.isActive,
-      _adminWallet,
+      mintData.firstOwner,
       mintData.onSale,
       mintData.onAuction,
       mintData.endTime,
