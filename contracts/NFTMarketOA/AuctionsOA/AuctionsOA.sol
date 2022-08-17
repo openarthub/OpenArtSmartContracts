@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "../../ERC721OA/IERC721OA.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "../StorageOA/IStorageOA.sol";
@@ -38,13 +38,25 @@ contract AuctionsOA is ReentrancyGuard, ApprovalsGuard, IEvents {
     IStorageOA iStorage = IStorageOA(_addressStorage);
     IStorageOA.StorageItem memory item = iStorage.getItem(itemId);
 
-    require(seller == item.owner, "You are not owner of this nft");
+    IERC721 erc721 = IERC721(item.nftContract);
+    address itemOwner = erc721.ownerOf(item.tokenId);
+
+    require(seller == itemOwner, "You are not owner of this nft");
     require(!item.onSale, "This item is currently on sale");
     require(!item.onAuction, "This item is already on auction");
-    IERC721(item.nftContract).transferFrom(item.owner, _addressStorage, item.tokenId);
-    iStorage.setItem(itemId, payable(seller), minBid, true, false, endTime, seller, 0, currency, true, _addressStorage);
+    erc721.transferFrom(itemOwner, _addressStorage, item.tokenId);
+    item.owner = payable(seller);
+    item.price = minBid;
+    item.onAuction = true;
+    item.onSale = false;
+    item.endTime = endTime;
+    item.highestBidder = seller;
+    item.highestBid = 0;
+    item.currency = currency;
+    item.stored = _addressStorage;
+    iStorage.setItem(itemId, item);
     collects[itemId][seller] = Collect(false, 0, currency, endTime);
-    emit ListItem(seller, address(0), itemId, item.nftContract, item.tokenId, minBid, block.timestamp);
+    emit ListItem(seller, address(0), itemId, item.nftContract, item.tokenId, minBid, currency);
   }
 
   /* Allow users to bid */
@@ -77,32 +89,42 @@ contract AuctionsOA is ReentrancyGuard, ApprovalsGuard, IEvents {
 
     collects[itemId][item.owner].amount = bidAmount;
 
-    emit MakeOffer(bidder, item.owner, itemId, item.nftContract, item.tokenId, bidAmount, item.endTime, block.timestamp);
+    emit MakeOffer(bidder, item.owner, itemId, item.nftContract, item.tokenId, bidAmount, item.endTime, item.currency);
   }
 
   /* Ends auction when time is done and sends the funds to the beneficiary */
   function getProfits(uint256 itemId, address collector) external onlyApprovals nonReentrant {
-    require(block.timestamp > collects[itemId][collector].endTime, "The auction has not ended yet");
-    require(!collects[itemId][collector].collected, "The function getProfit has already been called");
-    require(collects[itemId][collector].amount > 0, "Item didn't had bids");
+    Collect memory collect = collects[itemId][collector];
+    require(block.timestamp > collect.endTime, "The auction has not ended yet");
+    require(!collect.collected, "The function getProfit has already been called");
+    require(collect.amount > 0, "Item didn't had bids");
 
-    IERC20 erc20 = IERC20(collects[itemId][collector].currency);
+    IERC20 erc20 = IERC20(collect.currency);
 
+    address royaltiesReceiver;
+    uint256 royaltiesAmount;
+    IStorageOA.StorageItem memory item = IStorageOA(_addressStorage).getItem(itemId);
+    try IERC721OA(item.nftContract).royaltyInfo(item.tokenId, item.price) returns (
+      address receiver,
+      uint256 royaltyAmount
+    ) {
+      royaltiesReceiver = receiver;
+      royaltiesAmount = royaltyAmount;
+    } catch {}
+    if (royaltiesAmount > 0) {
+      require(erc20.transfer(royaltiesReceiver, royaltiesAmount), "Transfer failed");
+    }
     if (collector == owner) {
-      require(erc20.transfer(owner, collects[itemId][collector].amount), "Transfer failed");
+      require(erc20.transfer(owner, collect.amount - royaltiesAmount), "Transfer failed");
     } else {
       require(
-        erc20.transfer(
-          collector,
-          (collects[itemId][collector].amount - ((collects[itemId][collector].amount * _listingPrice) / 100))
-        ),
+        erc20.transfer(collector, (collect.amount - ((collect.amount * _listingPrice) / 100) - royaltiesAmount)),
         "Transfer to owner failed"
       );
-      require(erc20.transfer(owner, ((collects[itemId][collector].amount * _listingPrice) / 100)), "Transfer failed");
+      require(erc20.transfer(owner, ((collect.amount * _listingPrice) / 100)), "Transfer failed");
     }
 
     collects[itemId][collector].collected = true;
-    
   }
 
   /* Allows user to transfer the earned NFT */
@@ -112,7 +134,7 @@ contract AuctionsOA is ReentrancyGuard, ApprovalsGuard, IEvents {
     require(block.timestamp > item.endTime, "The auction has not ended yet");
     require(winner == item.highestBidder, "Only the winner can claim the nft.");
     iStorage.transferItem(itemId, winner);
-    emit SaleItem(item.owner, winner, itemId, item.nftContract, item.tokenId, item.highestBid, block.timestamp);
+    emit SaleItem(item.owner, winner, itemId, item.nftContract, item.tokenId, item.highestBid, item.currency);
   }
 
   /* Set storage address */

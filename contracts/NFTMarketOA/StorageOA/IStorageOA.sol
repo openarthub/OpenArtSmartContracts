@@ -17,6 +17,7 @@ interface IStorageOA {
     address currency;
     bool isActive;
     address stored;
+    bool firstSold;
   }
 
   // Method to get all actives items
@@ -36,19 +37,7 @@ interface IStorageOA {
   /* Allows other contract to send this contract's nft */
   function transferItem(uint256 itemId, address to) external;
 
-  function setItem(
-    uint256 itemId,
-    address payable ownerItem,
-    uint256 price,
-    bool onAuction,
-    bool onSale,
-    uint256 endTime,
-    address highestBidder,
-    uint256 highestBid,
-    address currency,
-    bool isActive,
-    address stored
-  ) external;
+  function setItem(uint256 itemId, StorageItem memory item) external;
 
   function setItemAuction(
     uint256 itemId,
@@ -65,7 +54,8 @@ interface IStorageOA {
     bool onAuction,
     uint256 endTime,
     address currency,
-    uint256 price
+    uint256 price,
+    bool firstSold
   ) external;
 
   function setActiveItem(uint256 itemId, bool isActive) external;

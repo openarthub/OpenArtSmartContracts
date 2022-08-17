@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "../NFTMarketOA/INFTMarketOA.sol";
 import "../../utils/ApprovalsGuard.sol";
-import "hardhat/console.sol";
 
 contract StorageOA is ApprovalsGuard {
   using Counters for Counters.Counter;
@@ -29,12 +28,12 @@ contract StorageOA is ApprovalsGuard {
     address currency;
     bool isActive;
     address stored;
+    bool firstSold;
   }
 
   mapping(uint256 => StorageItem) private storedItems;
 
   constructor(address addressBackup) {
-    console.log("Address Backup %s", addressBackup);
     if (addressBackup == address(0)) return;
     try INFTMarketOA(addressBackup).fetchMarketItems() returns (INFTMarketOA.MarketItem[] memory oldData) {
       for (uint256 item = 0; item < oldData.length; item++) {
@@ -53,7 +52,8 @@ contract StorageOA is ApprovalsGuard {
           oldData[item].highestBid,
           oldData[item].currency,
           oldData[item].isActive,
-          address(0)
+          address(0),
+          true
         );
       }
     } catch {
@@ -174,31 +174,22 @@ contract StorageOA is ApprovalsGuard {
     storedItems[itemId].stored = address(0);
     storedItems[itemId].highestBidder = address(0);
     storedItems[itemId].highestBid = 0;
+    if (!storedItems[itemId].firstSold) {
+      storedItems[itemId].firstSold = true;
+    }
   }
 
-  function setItem(
-    uint256 itemId,
-    address payable ownerItem,
-    uint256 price,
-    bool onAuction,
-    bool onSale,
-    uint256 endTime,
-    address highestBidder,
-    uint256 highestBid,
-    address currency,
-    bool isActive,
-    address stored
-  ) external onlyApprovals {
-    storedItems[itemId].owner = ownerItem;
-    storedItems[itemId].price = price;
-    storedItems[itemId].onAuction = onAuction;
-    storedItems[itemId].onSale = onSale;
-    storedItems[itemId].endTime = endTime;
-    storedItems[itemId].highestBidder = highestBidder;
-    storedItems[itemId].highestBid = highestBid;
-    storedItems[itemId].currency = currency;
-    storedItems[itemId].isActive = isActive;
-    storedItems[itemId].stored = stored;
+  function setItem(uint256 itemId, StorageItem memory item) external onlyApprovals {
+    storedItems[itemId].owner = item.owner;
+    storedItems[itemId].price = item.price;
+    storedItems[itemId].onAuction = item.onAuction;
+    storedItems[itemId].onSale = item.onSale;
+    storedItems[itemId].endTime = item.endTime;
+    storedItems[itemId].highestBidder = item.highestBidder;
+    storedItems[itemId].highestBid = item.highestBid;
+    storedItems[itemId].currency = item.currency;
+    storedItems[itemId].isActive = item.isActive;
+    storedItems[itemId].stored = item.stored;
   }
 
   function setItemAuction(
@@ -238,7 +229,8 @@ contract StorageOA is ApprovalsGuard {
         0,
         currency,
         isActive,
-        address(0)
+        address(0),
+        true
       )
     );
   }
@@ -256,7 +248,6 @@ contract StorageOA is ApprovalsGuard {
     address highestBidder,
     uint256 highestBid
   ) external {
-    console.log("Im inside of storage");
     require(msg.sender == _trustedAddress, "You can't execute this function");
     require(((price > 0 && (onAuction || onSale)) || (!onAuction && !onSale)), "Price must be greater than 0");
     _createItem(
@@ -273,7 +264,8 @@ contract StorageOA is ApprovalsGuard {
         highestBid,
         currency,
         isActive,
-        address(this)
+        address(this),
+        false
       )
     );
   }
@@ -294,7 +286,8 @@ contract StorageOA is ApprovalsGuard {
       item.highestBid,
       item.currency,
       item.isActive,
-      item.stored
+      item.stored,
+      item.firstSold
     );
 
     emit ItemCreated(itemId, item.nftContract, item.tokenId, item.owner);

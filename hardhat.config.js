@@ -13,11 +13,19 @@ module.exports = {
   networks: {
     testnet: {
       url: process.env.URL_RPC,
-      accounts: [process.env.WALLET_PRIVATE_KEY]
+      accounts: [process.env.DEPLOYER_WALLET_PRIVATE_KEY]
     },
     ganache: {
       url: process.env.URL_RPC,
-      accounts: [process.env.WALLET_PRIVATE_KEY]
+      accounts: [process.env.DEPLOYER_WALLET_PRIVATE_KEY]
+    },
+    mumbai: {
+      url: process.env.URL_RPC_MUMBAI,
+      accounts: [process.env.DEPLOYER_WALLET_PRIVATE_KEY]
+    },
+    binance: {
+      url: process.env.URL_RPC,
+      accounts: [process.env.DEPLOYER_WALLET_PRIVATE_KEY]
     },
   }
 };

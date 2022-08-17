@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "hardhat/console.sol";
-
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "../utils/ApprovalsGuard.sol";
-import "../ERC721OA/IERC721OA.sol";
+import "../ERC721OA/IERC721Royalties.sol";
 import "../NFTMarketOA/StorageOA/IStorageOATrusted.sol";
 
 contract Minter is ApprovalsGuard {
@@ -24,33 +21,43 @@ contract Minter is ApprovalsGuard {
     setApproval(minterWallet, true);
   }
 
-  function mint(
-    address contractAddress,
-    string memory urlAsset,
-    bool onSale,
-    bool onAuction,
-    bool isActive,
-    uint256 endTime,
-    address currency,
-    uint256 price,
-    address highestBidder,
-    uint256 highestBid
-  ) external onlyApprovals {
-    console.log("address", contractAddress);
-    IERC721OA erc721 = IERC721OA(contractAddress);
-    uint256 tokenId = erc721.createToken(urlAsset);
+  struct MintData {
+    address contractAddress;
+    string urlAsset;
+    bool onSale;
+    bool onAuction;
+    bool isActive;
+    address firstOwner;
+    uint256 endTime;
+    address currency;
+    uint256 price;
+    address highestBidder;
+    uint256 highestBid;
+    address royaltiesReceiver;
+    uint256 royaltiesPercent;
+    bool useRoyalties;
+  }
+
+  function mint(MintData memory mintData) external onlyApprovals {
+    IERC721Royalties erc721 = IERC721Royalties(mintData.contractAddress);
+    uint256 tokenId;
+    if (mintData.useRoyalties) {
+      tokenId = erc721.createToken(mintData.urlAsset, mintData.royaltiesPercent, mintData.royaltiesReceiver);
+    } else {
+      tokenId = erc721.createToken(mintData.urlAsset);
+    }
     IStorageOA(_storage).trustedCreateItem(
-      contractAddress,
+      mintData.contractAddress,
       tokenId,
-      isActive,
-      _adminWallet,
-      onSale,
-      onAuction,
-      endTime,
-      currency,
-      price,
-      highestBidder,
-      highestBid
+      mintData.isActive,
+      mintData.firstOwner,
+      mintData.onSale,
+      mintData.onAuction,
+      mintData.endTime,
+      mintData.currency,
+      mintData.price,
+      mintData.highestBidder,
+      mintData.highestBid
     );
     erc721.transferFrom(address(this), _storage, tokenId);
   }
