@@ -19,5 +19,13 @@ module.exports = {
       url: process.env.URL_RPC,
       accounts: [process.env.DEPLOYER_WALLET_PRIVATE_KEY]
     },
+    mumbai: {
+      url: process.env.URL_RPC_MUMBAI,
+      accounts: [process.env.DEPLOYER_WALLET_PRIVATE_KEY]
+    },
+    binance: {
+      url: process.env.URL_RPC,
+      accounts: [process.env.DEPLOYER_WALLET_PRIVATE_KEY]
+    },
   }
 };
