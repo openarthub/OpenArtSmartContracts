@@ -27,12 +27,10 @@ abstract contract ApprovalsGuard {
   }
 
   function setApproval(address approveAddress, bool approved) public onlyOwner {
-    require(msg.sender == owner, "You are not allowed to execute this function");
     _approvals[approveAddress] = approved;
   }
 
   function transferOwnership(address to_) external onlyOwner {
-    require(msg.sender == owner, "You are not allowed to execute this function");
     owner = to_;
   }
 }
