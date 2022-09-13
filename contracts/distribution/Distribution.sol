@@ -1,39 +1,56 @@
-//SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.4;
+
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @author OutDev Team
  * @title Distribution
  * @notice Contract that distribute initial earns in agreed slices.
  */
-contract Distribution {
+contract Distribution is Ownable {
   address private immutable PROMOTER;
   address private immutable OPENART;
   address private immutable CREATOR;
 
+  bytes public constant AGREEMENT = "Message of the contract";
+
   uint256 private constant PERCENT_PROMOTER = 20;
   uint256 private constant PERCENT_OPENART = 20;
   uint256 private constant PERCENT_CREATOR = 60;
-
-  uint256 public amountReceiver1;
-  uint256 public amountReceiver2;
-  uint256 public amountReceiver3;
 
   uint256 private constant _NOT_ENTERED = 1;
   uint256 private constant _ENTERED = 2;
 
   uint256 private _status;
 
+  address[] private _tokens = new address[](3);
+
+  // address account -> address token -> balance of address account
+  mapping(address => mapping(address => uint256)) private _amountReceived;
+
+  struct Balance {
+    address token;
+    uint256 amount;
+  }
+
+  /**
+   * @notice Initialize contract with the partners addresses and tokens
+   * @custom:detail Add address 0 to allow native currency
+   */
   constructor(
     address openartAddress_,
     address promoterAddress_,
-    address creatorAddress_
+    address creatorAddress_,
+    address[] memory tokens_
   ) {
     _status = _NOT_ENTERED;
     PROMOTER = promoterAddress_;
     OPENART = openartAddress_;
     CREATOR = creatorAddress_;
+    _tokens = tokens_;
   }
 
   /**
@@ -75,48 +92,135 @@ contract Distribution {
 
   /**
    * @dev Get caller's balance in the contract.
+   * @param sender address of user
    * @custom:restriction Cannot be accessed if caller is not member.
-   * @return amount returns caller's ether available.
+   * @return balances returns caller's tokens and ether available.
    */
-  function balance() external view onlyMembers returns (uint256 amount) {
+  function balance(address sender) external view returns (Balance[] memory) {
+    Balance[] memory balances = new Balance[](_tokens.length);
     uint256 percent;
-    if (msg.sender == PROMOTER) {
-      amount = PERCENT_PROMOTER;
+    if (sender == PROMOTER) {
+      percent = PERCENT_PROMOTER;
     }
 
-    if (msg.sender == OPENART) {
-      amount = PERCENT_OPENART;
+    if (sender == OPENART) {
+      percent = PERCENT_OPENART;
     }
 
-    if (msg.sender == CREATOR) {
-      amount = PERCENT_CREATOR;
+    if (sender == CREATOR) {
+      percent = PERCENT_CREATOR;
     }
-    amount = (address(this).balance * percent) / 100;
-    return amount;
+
+    for (uint256 i; i < _tokens.length; ) {
+      if (_tokens[i] == address(0)) {
+        balances[i] = (Balance(_tokens[i], ((address(this).balance * percent) / 100)));
+      } else {
+        balances[i] = (Balance(_tokens[i], ((IERC20(_tokens[i]).balanceOf(address(this)) * percent) / 100)));
+      }
+      unchecked {
+        ++i;
+      }
+    }
+
+    return balances;
   }
 
   /**
    * @dev Transfer caller's available balance.
+   * @param currencies Addresses of the tokens to collect.
+   * @custom:detail The address zero is used as the address of the native currency.
    * @custom:restriction Cannot be accessed if caller is not member.
    */
-  function getProfits() external onlyMembers nonReentrant {
-    uint256 amount1 = (address(this).balance * PERCENT_PROMOTER) / 100;
-    uint256 amount2 = (address(this).balance * PERCENT_OPENART) / 100;
-    uint256 amount3 = (address(this).balance * PERCENT_CREATOR) / 100;
+  function getProfits(address[] memory currencies) external onlyMembers nonReentrant {
+    uint256 amount1;
+    uint256 amount2;
+    uint256 amount3;
+    require(currencies.length <= _tokens.length, "Tokens addresses exceeds tokens amount.");
+    for (uint256 i; i < currencies.length; ) {
+      if (currencies[i] == address(0)) {
+        amount1 = (address(this).balance * PERCENT_PROMOTER) / 100;
+        amount2 = (address(this).balance * PERCENT_OPENART) / 100;
+        amount3 = (address(this).balance * PERCENT_CREATOR) / 100;
+      } else {
+        amount1 = (IERC20(currencies[i]).balanceOf(address(this)) * PERCENT_PROMOTER) / 100;
+        amount2 = (IERC20(currencies[i]).balanceOf(address(this)) * PERCENT_OPENART) / 100;
+        amount3 = (IERC20(currencies[i]).balanceOf(address(this)) * PERCENT_CREATOR) / 100;
+      }
 
-    amountReceiver1 += amount1;
-    amountReceiver2 += amount2;
-    amountReceiver3 += amount3;
+      _transfer(currencies[i], PROMOTER, amount1);
+      _transfer(currencies[i], OPENART, amount2);
+      _transfer(currencies[i], CREATOR, amount3);
 
-    bool sent1 = true;
-    if (PERCENT_PROMOTER > 0) {
-      (sent1, ) = payable(PROMOTER).call{value: amount1}("");
+      unchecked {
+        ++i;
+      }
+    }
+  }
+
+  function getTokensEnabled() external view returns (address[] memory) {
+    return _tokens;
+  }
+
+  /**
+   * @notice Add a new token for the contract.
+   *  Percents for the new toker are equals.
+   * @param token Address of token to add.
+   * @custom:restriction It can be executed only by the owner.
+   */
+  function setToken(address token) external onlyOwner {
+    _tokens.push(token);
+  }
+
+  /**
+   * @notice Delete token from contract.
+   * @param token Address of token to remove.
+   * @custom:restriction It can be executed only by the owner.
+   */
+  function removeToken(address token) external onlyOwner {
+    for (uint256 i; i < _tokens.length; ) {
+      if (_tokens[i] == token) {
+        _tokens[i] = _tokens[_tokens.length - 1];
+        _tokens.pop();
+        break;
+      }
+      unchecked {
+        ++i;
+      }
+    }
+  }
+
+  function _transfer(
+    address token_,
+    address to_,
+    uint256 amount_
+  ) internal returns (bool status) {
+    if (amount_ <= 0) return status;
+    _amountReceived[to_][token_] += amount_;
+    if (token_ != address(0)) {
+      IERC20(token_).transfer(to_, amount_);
+      return true;
     }
 
-    (bool sent2, ) = payable(OPENART).call{value: amount2}("");
-    (bool sent3, ) = payable(CREATOR).call{value: amount3}("");
+    (status, ) = payable(to_).call{value: amount_}("");
+    require(status, "Distribution: Error at transfer");
+  }
 
-    require(sent1 && sent2 && sent3, "Error at transfer.");
+  /**
+   * @notice Get the amount of tokens that an user has earned.
+   * @param account Address of user to get received amount.
+   * @param tokens_ Array of tokens' addresses to get.
+   * @custom:detail Address zero is uses as native currency address.
+   * @return Balance Array of structs that contain address of the token and amount received.
+   */
+  function getReceived(address account, address[] memory tokens_) external view returns (Balance[] memory) {
+    Balance[] memory balances = new Balance[](tokens_.length);
+    for (uint256 i; i < tokens_.length; ) {
+      balances[i] = Balance(tokens_[i], _amountReceived[account][tokens_[i]]);
+      unchecked {
+        ++i;
+      }
+    }
+    return balances;
   }
 
   receive() external payable {}
