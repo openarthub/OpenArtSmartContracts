@@ -1,5 +1,10 @@
 // Right click on the script name and hit "Run" to execute
 const hre = require('hardhat');
+require('dotenv').config();
+
+const MINTER_ADDRESS = process.env.CURRENT_MINTER_ADDRESS;
+const OPENART_ADDRESS = process.env.OPENART_ADDRESS_WALLET;
+const MAX_SUPPLY = process.env.MAX_SUPPLY_COLLECTION;
 
 const main = async () => {
   console.log('Running deployWithEthers script...');
@@ -9,14 +14,14 @@ const main = async () => {
   const erc721OA = await ERC721OA.deploy(
     'Examp', // name
     'FAMX', // symbol
-    '0x794Fed8D9bEe97a7e352e4C308Cec5632b741104', // Address owner
-    1, // max supply
+    OPENART_ADDRESS, // Address owner
+    MAX_SUPPLY_COLLECTION, // max supply
   );
 
   await erc721OA.deployed();
   const erc721OAAddress = erc721OA.address;
   console.log(`ERC721OA smart contract deployed at ${erc721OAAddress}`);
-  await erc721OA.setApproval('0x63594Ca39d89dfD0EB5E310AC20353538088c5d9', true);
+  await erc721OA.setApproval(MINTER_ADDRESS, true);
   console.log('setted');
 };
 
