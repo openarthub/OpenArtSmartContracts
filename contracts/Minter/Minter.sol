@@ -6,18 +6,10 @@ import "../ERC721OA/IERC721Royalties.sol";
 import "../NFTMarketOA/StorageOA/IStorageOATrusted.sol";
 
 contract Minter is ApprovalsGuard {
-  address private _minterWallet;
   address private _storage;
-  address private _adminWallet;
 
-  constructor(
-    address minterWallet,
-    address storageAddress,
-    address adminWallet
-  ) {
-    _minterWallet = minterWallet;
+  constructor(address minterWallet, address storageAddress) {
     _storage = storageAddress;
-    _adminWallet = adminWallet;
     setApproval(minterWallet, true);
   }
 
@@ -60,6 +52,10 @@ contract Minter is ApprovalsGuard {
       mintData.highestBid
     );
     erc721.transferFrom(address(this), _storage, tokenId);
+  }
+
+  function setStorageAddress(address storageAddress_) external onlyOwner {
+    _storage = storageAddress_;
   }
 
   /* Events from external contracts */
