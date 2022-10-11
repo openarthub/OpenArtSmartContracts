@@ -3,7 +3,6 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "../NFTMarketOA/INFTMarketOA.sol";
 import "../../utils/ApprovalsGuard.sol";
 
 contract StorageOA is ApprovalsGuard {
@@ -11,7 +10,23 @@ contract StorageOA is ApprovalsGuard {
   Counters.Counter private _itemIds;
 
   // Address allowed to create items without owner verification
-  address private _trustedAddress;
+  mapping(address => bool) _trustedAddresses;
+
+  constructor(address[] memory approvals_, address[] memory trusted_) {
+    for (uint256 i; i < approvals_.length; ) {
+      setApproval(approvals_[i], true);
+      unchecked {
+        ++i;
+      }
+    }
+
+    for (uint256 i; i < trusted_.length; ) {
+      _trustedAddresses[trusted_[i]] = true;
+      unchecked {
+        ++i;
+      }
+    }
+  }
 
   // Structur of items stored
   struct StorageItem {
@@ -32,34 +47,6 @@ contract StorageOA is ApprovalsGuard {
   }
 
   mapping(uint256 => StorageItem) private storedItems;
-
-  constructor(address addressBackup) {
-    if (addressBackup == address(0)) return;
-    try INFTMarketOA(addressBackup).fetchMarketItems() returns (INFTMarketOA.MarketItem[] memory oldData) {
-      for (uint256 item = 0; item < oldData.length; item++) {
-        _itemIds.increment();
-        uint256 itemId = _itemIds.current();
-        storedItems[itemId] = StorageItem(
-          itemId,
-          oldData[item].nftContract,
-          oldData[item].tokenId,
-          payable(oldData[item].owner),
-          oldData[item].price,
-          oldData[item].onAuction,
-          oldData[item].onSale,
-          oldData[item].endTime,
-          oldData[item].highestBidder,
-          oldData[item].highestBid,
-          oldData[item].currency,
-          oldData[item].isActive,
-          address(0),
-          true
-        );
-      }
-    } catch {
-      return;
-    }
-  }
 
   event ItemCreated(uint256 indexed itemId, address indexed nftContract, uint256 indexed tokenId, address owner);
 
@@ -248,7 +235,7 @@ contract StorageOA is ApprovalsGuard {
     address highestBidder,
     uint256 highestBid
   ) external {
-    require(msg.sender == _trustedAddress, "You can't execute this function");
+    require(_trustedAddresses[msg.sender], "You can't execute this function");
     require(((price > 0 && (onAuction || onSale)) || (!onAuction && !onSale)), "Price must be greater than 0");
     _createItem(
       StorageItem(
@@ -293,9 +280,9 @@ contract StorageOA is ApprovalsGuard {
     emit ItemCreated(itemId, item.nftContract, item.tokenId, item.owner);
   }
 
-  function setTrustedAddress(address trustedAddress) external {
+  function setTrustedAddress(address trustedAddress, bool status) external {
     require(msg.sender == owner, "You're not allowed to execute this function");
-    _trustedAddress = trustedAddress;
+    _trustedAddresses[trustedAddress] = status;
   }
 
   function setActiveItem(uint256 itemId, bool isActive) external {
