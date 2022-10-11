@@ -54,8 +54,7 @@ interface IStorageOA {
     bool onAuction,
     uint256 endTime,
     address currency,
-    uint256 price,
-    bool firstSold
+    uint256 price
   ) external;
 
   function setActiveItem(uint256 itemId, bool isActive) external;
