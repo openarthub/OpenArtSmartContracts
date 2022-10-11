@@ -145,3 +145,4 @@ coverage
 coverage.json
 
 .vscode/
+flatten/
