@@ -11,15 +11,15 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * @notice Contract that distribute initial earns in agreed slices.
  */
 contract Distribution is Ownable {
-  address private immutable PROMOTER;
-  address private immutable OPENART;
-  address private immutable CREATOR;
+  address private PROMOTER;
+  address private OPENART;
+  address private CREATOR;
 
   bytes public constant AGREEMENT = "Message of the contract";
 
-  uint256 private constant PERCENT_PROMOTER = 20;
-  uint256 private constant PERCENT_OPENART = 20;
-  uint256 private constant PERCENT_CREATOR = 60;
+  uint256 private PERCENT_PROMOTER = 0;
+  uint256 private PERCENT_OPENART = 50;
+  uint256 private PERCENT_CREATOR = 50;
 
   uint256 private constant _NOT_ENTERED = 1;
   uint256 private constant _ENTERED = 2;
@@ -70,6 +70,52 @@ contract Distribution is Ownable {
   function _nonReentrantBefore() private {
     require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
     _status = _ENTERED;
+  }
+
+  /**
+   * @notice Set address receiver of PROMOTER earns.
+   * @param wallet Address that will be set as receiver.
+   * @custom:restriction Only owner can execute this function.
+   */
+  function setPromoterAddress(address wallet) external onlyOwner {
+    PROMOTER = wallet;
+  }
+
+  /**
+   * @notice Set address receiver of CREATOR earns.
+   * @param wallet Address that will be set as receiver.
+   * @custom:restriction Only owner can execute this function.
+   */
+  function setCreatorAddress(address wallet) external onlyOwner {
+    CREATOR = wallet;
+  }
+
+  /**
+   * @notice Set address receiver of OPENART earns.
+   * @param wallet Address that will be set as receiver.
+   * @custom:restriction Only owner can execute this function.
+   */
+  function setOpenArtAddress(address wallet) external onlyOwner {
+    OPENART = wallet;
+  }
+
+  /**
+   * @notice Set distribution percent of each member.
+   * The sum of percents must be equals to 100.
+   * @param percentPromoter Percent of earns for PROMOTER.
+   * @param percentCreator Percent of earns for CREATOR.
+   * @param percentOpenArt Percent of earns for OPENART.
+   * @custom:restriction Only owner can execute this function.
+   */
+  function setDistributionPercents(
+    uint256 percentPromoter,
+    uint256 percentCreator,
+    uint256 percentOpenArt
+  ) external onlyOwner {
+    require((percentPromoter + percentCreator + percentOpenArt) == 100, "DISTRIBUTION: The total percent must be 100.");
+    PERCENT_PROMOTER = percentPromoter;
+    PERCENT_OPENART = percentOpenArt;
+    PERCENT_CREATOR = percentCreator;
   }
 
   /**
@@ -157,13 +203,17 @@ contract Distribution is Ownable {
     }
   }
 
+  /**
+   * @notice Retrieve addresses of tokens supported by the contract.
+   * @return address[] Array of addresses of tokens supported.
+   */
   function getTokensEnabled() external view returns (address[] memory) {
     return _tokens;
   }
 
   /**
    * @notice Add a new token for the contract.
-   *  Percents for the new toker are equals.
+   *  Percents for the new token are equals.
    * @param token Address of token to add.
    * @custom:restriction It can be executed only by the owner.
    */
